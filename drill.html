@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drill: What runs first? (setScreen, setProperty, console.log, onEvent)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f3f4f6; color: #111827; margin: 0; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 16px 16px 60px; }
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 24px; margin-bottom: 16px; }
+  h1 { margin: 0 0 8px; font-size: 24px; }
+  .muted { color: #6b7280; font-size: 14px; line-height: 1.5; }
+  button { font: inherit; cursor: pointer; border: none; border-radius: 8px; padding: 11px 18px; font-weight: 600; }
+  .primary { background: #2563eb; color: #fff; } .primary:disabled { background: #93c5fd; cursor: not-allowed; }
+  .secondary { background: #e5e7eb; color: #111827; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .progress { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-bottom: 18px; }
+  .progress > div { height: 100%; background: #2563eb; transition: width .3s; }
+  .qtext { font-size: 17px; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; }
+  pre.code { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 8px; font-size: 13.5px; overflow-x: auto; line-height: 1.5; margin: 0 0 16px; }
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice { display: flex; align-items: flex-start; gap: 12px; padding: 13px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; background: #fff; }
+  .choice:hover { border-color: #93c5fd; }
+  .choice.selected { border-color: #2563eb; background: #eff6ff; }
+  .choice.right { border-color: #16a34a; background: #dcfce7; }
+  .choice.wrong { border-color: #dc2626; background: #fee2e2; }
+  .choice input { margin-top: 3px; width: 18px; height: 18px; }
+  .choice code { white-space: pre-wrap; font-family: Consolas, Menlo, monospace; font-size: 13.5px; display: block; }
+  .fb { margin-top: 14px; padding: 12px 14px; border-radius: 8px; line-height: 1.55; font-size: 15px; }
+  .fb.ok { background: #dcfce7; border-left: 4px solid #16a34a; } .fb.bad { background: #fee2e2; border-left: 4px solid #dc2626; }
+  .actions { display: flex; justify-content: space-between; margin-top: 18px; gap: 10px; }
+  .rule { background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 12px 14px; border-radius: 8px; margin: 14px 0; font-size: 14.5px; line-height: 1.6; }
+  .score { font-size: 38px; font-weight: 800; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="intro" class="card">
+  <h1>Drill: What runs first?</h1>
+  <p class="muted">Focused practice on ordering: sequential code vs. code inside onEvent, and how setScreen / setProperty (last one wins) differ from console.log (every line shows). Instant feedback after each answer. Questions and answer choices are shuffled every time.</p>
+  <div class="rule">
+    <b>The rule</b><br>
+    1. Every statement <b>outside</b> an onEvent runs first, top to bottom, before the user can do anything.<br>
+    2. Statements <b>inside</b> an onEvent run only when that event happens, in the order the user triggers events. Inside one handler, top to bottom.<br>
+    3. Where an onEvent sits in the file does not matter.<br>
+    4. <b>setScreen</b> and <b>setProperty</b> replace: you only see the last one that ran. <b>console.log</b> adds a line every time.<br>
+    5. A button's onEvent can only fire if the button is on the screen currently showing.
+  </div>
+  <button class="primary" onclick="start()">Start Drill</button>
+</div>
+
+<div id="quiz" class="card hidden">
+  <div class="topbar"><b id="qnum"></b><span class="muted" id="running"></span></div>
+  <div class="progress"><div id="bar" style="width:0%"></div></div>
+  <div id="qbody"></div>
+  <div class="actions">
+    <span></span>
+    <button class="primary" id="checkBtn" onclick="check()" disabled>Check Answer</button>
+    <button class="primary hidden" id="nextBtn" onclick="next()">Next</button>
+  </div>
+</div>
+
+<div id="done" class="card hidden">
+  <h1>Done</h1>
+  <div class="score" id="scoreLine"></div>
+  <p class="muted" id="summary"></p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="primary" onclick="location.reload()">Run Again (reshuffled)</button>
+    <button class="secondary" onclick="retryMissed()" id="retryBtn">Retry Only Missed</button>
+  </div>
+  <div id="review"></div>
+</div>
+
+</div>
+<script>
+const Q = [
+  {q:'The following program is run. What screen is the user looking at when the program is finished running?', code:'setScreen("quizScreen");\nsetScreen("homeScreen");\nsetScreen("resultsScreen");', c:['quizScreen','homeScreen','resultsScreen','The default first screen'], a:2, ex:'All three run in order at startup. setScreen replaces, so the last one (resultsScreen) is what the user sees.'},
+  {q:'The following program is run and the user does NOT click anything. What is the "text" of "label1"?', code:'setProperty("label1", "text", "red");\nsetScreen("screen2");\nsetProperty("label1", "text", "blue");\nonEvent("topButton", "click", function() {\n  setProperty("label1", "text", "green");\n});\nsetProperty("label1", "text", "yellow");', c:['red','blue','green','yellow'], a:3, ex:'Sequential: red, blue, yellow (last wins). green is inside the onEvent and needs a click.'},
+  {q:'The following program is run. Which screen is showing when the program finishes, and what does the console display?', code:'setScreen("blueScreen");\nconsole.log("one");\nsetScreen("greenScreen");\nconsole.log("two");\nsetScreen("redScreen");', c:['redScreen; one, two','blueScreen; one, two','redScreen; two','greenScreen; one, two'], a:0, ex:'Screen keeps only the last value (redScreen). Console keeps every line (one, two).'},
+  {q:'The following program is run and the user clicks "topButton" ONCE. Which screen is showing afterward? (topButton is on every screen.)', code:'setScreen("aScreen");\nonEvent("topButton", "click", function() {\n  setScreen("bScreen");\n});\nsetScreen("cScreen");', c:['aScreen','bScreen','cScreen','It alternates between bScreen and cScreen'], a:1, ex:'Startup ends on cScreen (a, then c). The click then runs the handler: bScreen.'},
+  {q:'The following program is run and the user does NOT click anything. Which screen is showing?', code:'onEvent("topButton", "click", function() {\n  setScreen("gameScreen");\n  setScreen("winScreen");\n});\nsetScreen("menuScreen");\nsetScreen("introScreen");', c:['winScreen','gameScreen','menuScreen','introScreen'], a:3, ex:'Nothing inside the onEvent runs without a click. Sequential: menu, then intro. Last wins.'},
+  {q:'The following program is run and the user clicks "topButton" ONCE. What is the "text" of "label1"?', code:'setProperty("label1", "text", "first");\nonEvent("topButton", "click", function() {\n  setProperty("label1", "text", "second");\n  setProperty("label1", "text", "third");\n});\nsetProperty("label1", "text", "fourth");', c:['first','second','third','fourth'], a:2, ex:'Startup: first, then fourth. Click: second, then third. The last statement that ran is third.'},
+  {q:'A specification says the app must start on "homeScreen." Which program FAILS this requirement?', c:['setScreen("homeScreen");\nonEvent("nextButton", "click", function() {\n  setScreen("infoScreen");\n});','onEvent("nextButton", "click", function() {\n  setScreen("infoScreen");\n});\nsetScreen("homeScreen");','setScreen("homeScreen");\nsetScreen("infoScreen");\nonEvent("backButton", "click", function() {\n  setScreen("homeScreen");\n});','setScreen("infoScreen");\nsetScreen("homeScreen");\nonEvent("nextButton", "click", function() {\n  setScreen("infoScreen");\n});'], a:2, ex:'Option 3 shows homeScreen for an instant, then immediately switches to infoScreen at startup. The others all finish startup on homeScreen (in the last option, infoScreen is overwritten by homeScreen).'},
+  {q:'The following program is run. The user clicks "bottomButton" ONCE and then "topButton" ONCE. What does the console display, and which screen is showing at the end? (Both buttons are on every screen.)', code:'console.log("start");\nsetScreen("oneScreen");\nonEvent("topButton", "click", function() {\n  setScreen("twoScreen");\n  console.log("top");\n});\nsetScreen("threeScreen");\nonEvent("bottomButton", "click", function() {\n  console.log("bottom");\n  setScreen("fourScreen");\n});\nconsole.log("end");', c:['start, end, bottom, top; twoScreen','start, end, top, bottom; fourScreen','start, bottom, top, end; twoScreen','start, end, bottom, top; threeScreen'], a:0, ex:'Sequential: start, oneScreen, threeScreen, end. Click bottom: "bottom", fourScreen. Click top: twoScreen, "top". setScreen prints nothing to the console.'},
+  {q:'The following program is run. Then the user clicks the "topButton" button ONCE. What will be displayed in the console?', code:'console.log("cat");\nonEvent("topButton", "click", function() {\n  console.log("bird");\n});\nconsole.log("dog");', c:['cat\nbird\ndog','dog\ncat\nbird','cat\ndog\nbird','bird\ncat\ndog'], a:2, ex:'cat and dog are sequential and print first, even though bird is written between them. bird waits for the click.'},
+  {q:'The following program is run. Then the user clicks the "bottomButton" TWO TIMES. What will be displayed in the console?', code:'onEvent("topButton", "click", function() {\n  console.log("aaa");\n});\nconsole.log("bbb");\nonEvent("bottomButton", "click", function() {\n  console.log("ccc");\n});\nconsole.log("ddd");', c:['aaa\nbbb\nccc\nccc\nddd','bbb\nddd\nccc\nccc','bbb\nddd\naaa\naaa','bbb\nccc\nccc\nddd'], a:1, ex:'Sequential: bbb, ddd. Each bottomButton click prints ccc. topButton was never clicked, so no aaa.'},
+  {q:'The following program is run and the user does NOT click anything. What is the "background-color" of "topButton"?', code:'setProperty("topButton", "background-color", "red");\nsetProperty("topButton", "background-color", "blue");\nonEvent("topButton", "click", function() {\n  setProperty("topButton", "background-color", "green");\n  setProperty("topButton", "background-color", "orange");\n});', c:['red','blue','green','orange'], a:1, ex:'Only the two sequential lines run: red, then blue. Last wins.'},
+  {q:'The following program is run. The user clicks "topButton" ONCE. Which screen is showing afterward, and why? (Assume startButton is only on homeScreen and topButton is only on gameScreen.)', code:'onEvent("startButton", "click", function() {\n  setScreen("gameScreen");\n});\nonEvent("topButton", "click", function() {\n  setScreen("winScreen");\n});\nsetScreen("gameScreen");', c:['winScreen, because the sequential setScreen put the user on gameScreen where topButton lives, and clicking it ran the handler','gameScreen, because onEvent handlers written above a sequential setScreen are cancelled','homeScreen, because the app always starts on the first screen created in Design Mode','winScreen, because the startButton handler ran first and then the topButton handler ran'], a:0, ex:'Startup: sequential setScreen shows gameScreen. topButton is on gameScreen, so the user can click it, and the handler switches to winScreen. startButton was never clicked.'},
+  {q:'Which of the following BEST explains why the user sees "dog" in label1 and never sees "cat", even though "cat" is written first?', code:'setProperty("label1", "text", "cat");\nsetProperty("label1", "text", "dog");', c:['Both statements ran in order, but setProperty replaces the value, so "cat" was overwritten by "dog" before the screen could be seen','The second setProperty ran first because statements closer to the bottom have higher priority','The first setProperty did not run because setProperty can only be used once per element','The first setProperty printed "cat" to the Debug Console instead of the screen'], a:0, ex:'Everything ran top to bottom. "cat" was on the label for a split second, then "dog" replaced it.'},
+  {q:'The following program is run and the user clicks "topButton" THREE TIMES. What is the text of label1, and how many lines are in the console?', code:'setProperty("label1", "text", "zero");\nconsole.log("loaded");\nonEvent("topButton", "click", function() {\n  setProperty("label1", "text", "one");\n  console.log("pressed");\n  setProperty("label1", "text", "two");\n});', c:['two; 4 lines','two; 3 lines','one; 4 lines','zero; 1 line'], a:0, ex:'Each click ends with the label at "two" and adds one "pressed" line. "loaded" plus three "pressed" = 4 lines.'},
+  {q:'The following program is run and the user does NOT click anything. Which screen is showing?', code:'setScreen("redScreen");\nonEvent("topButton", "click", function() {\n  setScreen("blueScreen");\n});\nonEvent("bottomButton", "click", function() {\n  setScreen("greenScreen");\n});', c:['redScreen','blueScreen','greenScreen','No screen, because setScreen must be inside an onEvent'], a:0, ex:'The only setScreen that runs without a click is the sequential one at the top: redScreen.'},
+  {q:'The following program is run. The user clicks "bottomButton" ONCE, then "topButton" ONCE. What is the "text" of "label1" at the end?', code:'setProperty("label1", "text", "A");\nonEvent("topButton", "click", function() {\n  setProperty("label1", "text", "B");\n});\nonEvent("bottomButton", "click", function() {\n  setProperty("label1", "text", "C");\n});\nsetProperty("label1", "text", "D");', c:['B','C','D','A'], a:0, ex:'Startup: A then D. Click bottom: C. Click top: B. The last change that happened is B.'},
+];
+
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmt(c) { return c.includes('\n') ? '<code>' + esc(c) + '</code>' : esc(c); }
+
+let order = [], idx = 0, picked = null, results = [], running = 0;
+function start(list) {
+  order = (list || shuffle(Q.map((_, i) => i))).map(i => { const q = Q[i]; const perm = shuffle(q.c.map((_, k) => k)); return { i, c: perm.map(k => q.c[k]), a: perm.indexOf(q.a) }; });
+  idx = 0; results = []; running = 0;
+  document.getElementById('intro').classList.add('hidden'); document.getElementById('done').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  render();
+}
+function render() {
+  const o = order[idx], q = Q[o.i]; picked = null;
+  document.getElementById('qnum').textContent = `Question ${idx + 1} of ${order.length}`;
+  document.getElementById('running').textContent = `${running} correct so far`;
+  document.getElementById('bar').style.width = `${idx / order.length * 100}%`;
+  let h = `<div class="qtext">${esc(q.q)}</div>`;
+  if (q.code) h += `<pre class="code">${esc(q.code)}</pre>`;
+  h += '<div class="choices">' + o.c.map((c, k) => `<label class="choice" id="ch${k}"><input type="radio" name="a" onchange="pick(${k})"><span>${fmt(c)}</span></label>`).join('') + '</div><div id="fb"></div>';
+  document.getElementById('qbody').innerHTML = h;
+  document.getElementById('checkBtn').disabled = true; document.getElementById('checkBtn').classList.remove('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+  window.scrollTo(0, 0);
+}
+function pick(k) { picked = k; order[idx].c.forEach((_, j) => document.getElementById('ch' + j).classList.toggle('selected', j === k)); document.getElementById('checkBtn').disabled = false; }
+function check() {
+  const o = order[idx], q = Q[o.i], ok = picked === o.a;
+  if (ok) running++;
+  results.push({ i: o.i, ok });
+  document.getElementById('ch' + o.a).classList.add('right');
+  if (!ok) document.getElementById('ch' + picked).classList.add('wrong');
+  document.querySelectorAll('#qbody input').forEach(i => i.disabled = true);
+  document.getElementById('fb').innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'}"><b>${ok ? 'Correct.' : 'Not quite.'}</b> ${esc(q.ex)}</div>`;
+  document.getElementById('running').textContent = `${running} correct so far`;
+  document.getElementById('checkBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+  document.getElementById('nextBtn').textContent = idx === order.length - 1 ? 'See Results' : 'Next';
+}
+function next() { idx++; if (idx >= order.length) finish(); else render(); }
+function finish() {
+  document.getElementById('quiz').classList.add('hidden'); document.getElementById('done').classList.remove('hidden');
+  const n = results.filter(r => r.ok).length;
+  document.getElementById('scoreLine').textContent = `${n} / ${results.length}`;
+  const missed = results.filter(r => !r.ok);
+  document.getElementById('summary').textContent = missed.length ? `You missed ${missed.length}. Retry just those below, or run the whole set again.` : 'Perfect. You have this rule down.';
+  document.getElementById('retryBtn').classList.toggle('hidden', missed.length === 0);
+  document.getElementById('review').innerHTML = missed.map(r => { const q = Q[r.i]; return `<div class="fb bad" style="margin-top:12px"><b>Missed:</b> ${esc(q.q)}${q.code ? `<pre class="code" style="margin:8px 0">${esc(q.code)}</pre>` : ''}<b>Answer:</b> ${fmt(q.c[q.a])}<br><b>Why:</b> ${esc(q.ex)}</div>`; }).join('');
+  window.scrollTo(0, 0);
+}
+function retryMissed() { start(shuffle(results.filter(r => !r.ok).map(r => r.i))); }
+</script>
+</body>
+</html>
