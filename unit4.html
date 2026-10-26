@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AP CSP Unit 4 Practice Test</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f3f4f6; color: #111827; margin: 0; padding: 0; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 16px 16px 60px; }
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 24px; margin-bottom: 16px; }
+  h1 { margin: 0 0 8px; font-size: 26px; }
+  h2 { margin: 0 0 12px; font-size: 20px; }
+  h3 { margin: 18px 0 8px; font-size: 16px; }
+  p { line-height: 1.5; }
+  .muted { color: #6b7280; font-size: 14px; }
+  button { font: inherit; cursor: pointer; border: none; border-radius: 8px; padding: 11px 18px; font-weight: 600; }
+  .primary { background: #2563eb; color: #fff; }
+  .primary:disabled { background: #93c5fd; cursor: not-allowed; }
+  .secondary { background: #e5e7eb; color: #111827; }
+  .warnbtn { background: #f59e0b; color: #fff; }
+  .danger { background: #dc2626; color: #fff; }
+  .small { padding: 7px 12px; font-size: 14px; }
+  .nav { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .nav button { background: #e5e7eb; color: #374151; }
+  .nav button.active { background: #111827; color: #fff; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+  .timer { font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; padding: 6px 14px; border-radius: 8px; background: #111827; color: #fff; }
+  .timer.warn { background: #dc2626; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: .6; } }
+  .progress { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-bottom: 18px; }
+  .progress > div { height: 100%; background: #2563eb; transition: width .3s; }
+  .qtype { display: inline-block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 3px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; margin-bottom: 10px; }
+  .qtext { font-size: 18px; line-height: 1.5; margin-bottom: 16px; white-space: pre-wrap; }
+  pre.code { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 8px; font-size: 13.5px; overflow-x: auto; line-height: 1.5; margin: 0 0 16px; }
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice { display: flex; align-items: flex-start; gap: 12px; padding: 13px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all .15s; background: #fff; }
+  .choice:hover { border-color: #93c5fd; background: #f8fbff; }
+  .choice.selected { border-color: #2563eb; background: #eff6ff; }
+  .choice input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
+  .choice span { line-height: 1.4; }
+  .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 10px; flex-wrap: wrap; }
+  .lockwarn { font-size: 13px; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 8px 12px; border-radius: 8px; }
+  .score { font-size: 42px; font-weight: 800; margin: 6px 0; }
+  .review-q { border-left: 5px solid #e5e7eb; padding-left: 14px; margin-bottom: 24px; }
+  .review-q.correct { border-color: #16a34a; }
+  .review-q.wrong { border-color: #dc2626; }
+  .review-q.skipped { border-color: #f59e0b; }
+  .tag { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; display: inline-block; margin-bottom: 6px; }
+  .tag.ok { background: #dcfce7; color: #166534; }
+  .tag.bad { background: #fee2e2; color: #991b1b; }
+  .tag.skip { background: #fef3c7; color: #92400e; }
+  .ans-list { margin: 6px 0; padding-left: 0; list-style: none; }
+  .ans-list li { padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; font-size: 15px; }
+  .ans-list li.right { background: #dcfce7; }
+  .ans-list li.yours-wrong { background: #fee2e2; }
+  .ans-list li.missed { background: #fef9c3; }
+  .explain { background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 6px; padding: 10px 12px; font-size: 14.5px; margin-top: 8px; line-height: 1.55; }
+  .settings { display: flex; gap: 16px; flex-wrap: wrap; margin: 14px 0; align-items: flex-end; }
+  .settings label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; font-weight: 600; }
+  .settings input { font: inherit; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; width: 110px; }
+  ul.rules { line-height: 1.7; padding-left: 20px; }
+  .hidden { display: none !important; }
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 18px; }
+  .stat { background: #f9fafb; border-radius: 8px; padding: 10px 14px; min-width: 110px; }
+  .stat b { display: block; font-size: 22px; }
+  .stat span { font-size: 13px; color: #6b7280; }
+  .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+  /* vocab */
+  .vocab-item { padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 10px; background: #fff; }
+  .vocab-item b { font-size: 16px; }
+  .vocab-item .def { margin-top: 4px; line-height: 1.5; color: #374151; }
+  .vocab-item .src { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+  .vocab-item.hide-def .def { filter: blur(6px); cursor: pointer; user-select: none; }
+  .vocab-item.hide-def .def.shown { filter: none; }
+  .flash { min-height: 220px; border: 2px solid #e5e7eb; border-radius: 14px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; cursor: pointer; font-size: 20px; line-height: 1.5; background: #fff; transition: background .2s; }
+  .flash.back { background: #eff6ff; font-size: 17px; }
+  .flash .hint { display: block; font-size: 12px; color: #9ca3af; margin-top: 12px; font-weight: 400; }
+  .pill { display: inline-block; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-left: 6px; }
+  .dlabel { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; margin-left: 6px; }
+  .d1 { background: #dcfce7; color: #166534; } .d2 { background: #fef3c7; color: #92400e; } .d3 { background: #fee2e2; color: #991b1b; } .d4 { background: #111827; color: #fff; }
+  .diffbox { background: #f9fafb; border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .diffbox input[type=range] { width: 100%; max-width: 420px; }
+  .diffrow { display: flex; justify-content: space-between; max-width: 420px; font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .learn-mod { border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .learn-mod > button.hdr { width: 100%; text-align: left; background: #fff; color: #111827; border-radius: 0; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .learn-mod > button.hdr:hover { background: #f8fafc; }
+  .learn-body { padding: 4px 16px 16px; border-top: 1px solid #e5e7eb; }
+  .learn-body ul { line-height: 1.6; padding-left: 20px; }
+  .pq { border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px; margin: 10px 0; }
+  .pq .choice { padding: 10px; }
+  .pq .fb { margin-top: 8px; padding: 8px 10px; border-radius: 6px; font-size: 14px; }
+  .pq .fb.ok { background: #dcfce7; color: #166534; } .pq .fb.bad { background: #fee2e2; color: #991b1b; }
+  .seenbar { height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; max-width: 420px; margin-top: 4px; }
+  .seenbar > div { height: 100%; background: #16a34a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="nav" id="nav">
+  <button class="active" onclick="showTab('start')">Practice Test</button>
+  <button onclick="showTab('learn')">Learn</button>
+  <button onclick="showTab('vocab')">Vocabulary</button>
+  <button onclick="showTab('missed')">Missed Questions <span id="missedPill" class="pill hidden"></span></button>
+</div>
+
+<!-- START SCREEN -->
+<div id="start" class="card tabpane">
+  <h1>AP CSP Unit 4 Practice Test</h1>
+  <p class="muted">Unit 4: Variables, Conditionals, and Functions (Lessons 1-11 + Unit 4 vocab). AP exam pseudocode and JavaScript code tracing, with no easy-to-eliminate answer choices.</p>
+  <h2>How it works</h2>
+  <ul class="rules">
+    <li>Questions are pulled randomly from a bank of <b id="bankCount"></b> questions, so every attempt is different.</li>
+        <li>Every answer choice is written to be plausible. Expect to read each option carefully; the questions are modeled on the Code.org Unit 3 assessment wording.</li>
+    <li>Mix: about <b>60% code tracing</b> (variables, expressions, modulus, Booleans, if/else-if, functions, AP pseudocode), <b>20% vocabulary</b>, <b>20% concepts</b>. Mostly multiple choice, a few multi-select and true/false.</li>
+    <li>Timer runs the whole time. When it hits 0:00 the test auto-submits.</li>
+    <li><b>You cannot go back.</b> Once you lock in an answer, you move forward only.</li>
+    <li>Multi-select is all-or-nothing, like a Canvas "choose all that apply."</li>
+    <li>Answers and explanations appear only after you submit. Anything you miss is saved to the <b>Missed Questions</b> tab so you can retake it later.</li>
+  </ul>
+  <div class="settings">
+    <label>Questions <input type="number" id="numQ" value="16" min="5" max="80"></label>
+    <label>Minutes <input type="number" id="numMin" value="20" min="1" max="120"></label>
+    <button class="primary" onclick="startTest()">Start Test</button>
+  </div>
+  <div class="diffbox">
+    <b>Progress through the bank</b> <span class="muted" id="seenText"></span>
+    <div class="seenbar"><div id="seenBar" style="width:0%"></div></div>
+    <p class="muted" style="margin:8px 0 0">New tests pull <b>unseen questions first</b>, so you will not get repeats until you have seen everything. <button class="secondary small" onclick="resetSeen()">Reset seen list</button></p>
+  </div>
+  <p class="muted" style="margin-top:14px">Works fully offline. Your missed and seen questions are saved in this browser.</p>
+</div>
+
+<!-- LEARN SCREEN -->
+<div id="learn" class="card tabpane hidden">
+  <h1>Learn the Concepts</h1>
+  <p class="muted">Every Unit 4 concept from the lesson slides, Code Studio, and your CFUs, explained, with practice questions that are separate from the test bank. Practice gives instant feedback. Click a topic to open it.</p>
+  <div class="btnrow"><button class="secondary small" onclick="openAllLearn(true)">Expand all</button><button class="secondary small" onclick="openAllLearn(false)">Collapse all</button></div>
+  <div id="learnBody"></div>
+</div>
+
+<!-- VOCAB SCREEN -->
+<div id="vocab" class="card tabpane hidden">
+  <h1>Unit 4 Vocabulary</h1>
+  <p class="muted">All terms from the Unit 4 vocab doc (slide terms + AP framework terms), plus flowchart, truth table, global/local variable, modulus, and pseudocode from the lesson slides.</p>
+  <div class="btnrow">
+    <button class="secondary small" onclick="vocabMode='list'; renderVocab()">List</button>
+    <button class="secondary small" onclick="vocabMode='flash'; flashIdx=0; flashBack=false; renderVocab()">Flashcards</button>
+    <button class="secondary small" onclick="vocabMode='quiz'; startVocabQuiz()">Quick Quiz</button>
+    <button class="primary small" onclick="shuffleVocab()">Shuffle Order</button>
+    <button class="secondary small" onclick="resetVocabOrder()">Original Order</button>
+    <button class="secondary small" id="hideDefBtn" onclick="hideDefs=!hideDefs; renderVocab()">Hide Definitions</button>
+  </div>
+  <div id="vocabBody"></div>
+</div>
+
+<!-- MISSED SCREEN -->
+<div id="missed" class="card tabpane hidden">
+  <h1>Missed Questions</h1>
+  <p class="muted">Every question you have gotten wrong (or ran out of time on) across all attempts. Get one right on a "Retake Missed" test and it is removed from this list.</p>
+  <div class="btnrow">
+    <button class="primary" id="retakeBtn" onclick="startMissedTest()">Retake Missed Questions</button>
+    <button class="secondary" onclick="toggleMissedReview()">Show / Hide Answers</button>
+    <button class="danger small" onclick="clearMissed()">Clear List</button>
+  </div>
+  <div id="missedBody"></div>
+</div>
+
+<!-- TEST SCREEN -->
+<div id="test" class="card hidden">
+  <div class="topbar">
+    <div><b id="qnum"></b> <span class="muted" id="qpts"></span> <span class="muted" id="modeLabel"></span></div>
+    <div class="timer" id="timer">20:00</div>
+  </div>
+  <div class="progress"><div id="bar" style="width:0%"></div></div>
+  <div id="qbody"></div>
+  <div class="actions">
+    <div class="lockwarn">No going back once you lock in.</div>
+    <button class="primary" id="lockBtn" onclick="lockIn()" disabled>Lock In Answer</button>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="results" class="card hidden">
+  <h1>Results</h1>
+  <div class="score" id="scoreLine"></div>
+  <div class="stats" id="stats"></div>
+  <div class="btnrow">
+    <button class="primary" onclick="location.reload()">Take Another Test</button>
+    <button class="warnbtn" id="retakeMissedNow" onclick="startMissedTest()">Retake What I Missed</button>
+    <button class="secondary" onclick="document.getElementById('review').classList.toggle('hidden')">Show / Hide Full Review</button>
+  </div>
+  <div id="review"></div>
+</div>
+
+</div>
+
+<script>
+// ===== VOCABULARY (from the Unit 3 vocab doc) =====
+const VOCAB = [
+  {t:'Expression', d:'A combination of operators and values that evaluates to a single value. (Framework: a programming statement that can consist of a value, a variable, an operator, or a procedure call that returns a value.)', s:'Slides + AP Framework'},
+  {t:'Assignment Operator', d:'Allows a program to change the value represented by a variable. Written = in JavaScript and \u2190 on the AP exam.', s:'Slides'},
+  {t:'Variable', d:'A named reference to a value that can be used repeatedly throughout a program. Holds one value at a time.', s:'Slides'},
+  {t:'Boolean Value', d:'A data type that is either true or false.', s:'Slides'},
+  {t:'Comparison Operators', d:'<, >, <=, >=, ==, != indicate a Boolean expression.', s:'Slides'},
+  {t:'Function', d:'A named group of programming instructions. Also referred to as a "procedure".', s:'Slides'},
+  {t:'Function Call', d:'A command that executes the code within a function.', s:'Slides'},
+  {t:'Arithmetic Operator', d:'Part of most programming languages and include addition, subtraction, multiplication, division, and modulus operators.', s:'AP Framework'},
+  {t:'Boolean Expression', d:'Evaluates to either true or false.', s:'AP Framework'},
+  {t:'Concatenation', d:'Joins together two or more strings end-to-end to make a new string.', s:'AP Framework'},
+  {t:'Conditional Statement', d:'Affects the sequential flow of control by executing different statements based on the value of a Boolean expression.', s:'AP Framework'},
+  {t:'Evaluate', d:'Expressions are evaluated to produce a single value.', s:'AP Framework'},
+  {t:'Logical Operator', d:'NOT, AND, and OR, which evaluate to a Boolean value. (&&, ||, ! in JavaScript.)', s:'AP Framework'},
+  {t:'Procedure', d:'A named group of programming instructions that may have parameters and return values.', s:'AP Framework'},
+  {t:'Relational Operator', d:'Used to test the relationship between two variables, expressions, or values. A comparison using a relational operator evaluates to a Boolean value. For example: =, \u2260, >, <, \u2265, and \u2264.', s:'AP Framework'},
+  {t:'Selection', d:'Determines which parts of an algorithm are executed based on a condition being true or false.', s:'AP Framework'},
+  {t:'String', d:'An ordered sequence of characters.', s:'AP Framework'},
+  {t:'Flowchart', d:'A diagram that shows the steps and decisions in a computer program. Rectangles are statements, diamonds are decisions.', s:'Lesson 5 slides'},
+  {t:'Truth Table', d:'A breakdown of all the possible truth values returned by a logical expression.', s:'Lesson 5 slides'},
+  {t:'Global Variable', d:'Created with var outside any onEvent or function. Permanent; can be used anywhere in your code.', s:'Lesson 3 slides'},
+  {t:'Local Variable', d:'Created with var inside an onEvent or function. Temporary; can be used only there and is deleted once it finishes running.', s:'Lesson 3 slides'},
+  {t:'Modulus (MOD, %)', d:'Arithmetic operator that gives the remainder of a division. 17 % 5 = 2.', s:'Lesson 4 warm-up + Lesson 6'},
+  {t:'Pseudocode', d:'A language that represents concepts across programming languages but cannot actually be run by a computer (like the AP reference sheet).', s:'Lesson 5 CFU'}
+];
+
+// ===== QUESTION BANK =====
+// type: 'tf' (true/false), 'ms' (multi-select), 'mc' (multiple choice)
+const BANK = [{"type":"mc","cat":"code","q":"What will be displayed after the following code segment is run?","code":"a ← 4\nb ← a + 2\na ← b * 2\nb ← a - b\nDISPLAY(a)\nDISPLAY(b)","c":["12 6","12 12","8 6","12 4"],"a":0,"ex":"a = 4, b = 6, a = 6 * 2 = 12, b = 12 - 6 = 6. Each line uses the CURRENT values at that moment."},{"type":"mc","cat":"code","q":"Consider the following code segment. What value is stored in variable y after it runs?","code":"x ← 5\ny ← x\nx ← 10","c":["5","10","x","15"],"a":0,"ex":"y got a COPY of x's value (5) on line 2. Changing x later does not change y. Variables are not connected."},{"type":"mc","cat":"code","q":"A programmer wants to swap the values of a and b. What is displayed after the code segment below is run?","code":"a ← 3\nb ← 7\na ← b\nb ← a\nDISPLAY(a)\nDISPLAY(b)","c":["7 7","7 3","3 7","3 3"],"a":0,"ex":"After a ← b, a is 7 and the old 3 is gone forever. Then b ← a makes b 7 too. This is why a swap needs a temporary variable."},{"type":"mc","cat":"code","q":"Which of the following code segments correctly swaps the values stored in a and b, so that a ends with b's original value and b ends with a's original value?","c":["temp ← a\na ← b\nb ← temp","a ← b\nb ← a","temp ← a\nb ← a\na ← temp","a ← b\ntemp ← a\nb ← temp"],"a":0,"ex":"Save a in temp before overwriting it. In option 4, temp copies a AFTER a was already overwritten, so the original value is lost."},{"type":"ms","cat":"code","q":"Consider the following code segment. Which of the following statements are TRUE after it runs? Choose all that apply.","code":"fuzz ← 5\nclip ← fuzz + 2\nfuzz ← clip + 1\nclip ← \"gr\" + fuzz\nfuzz ← fuzz + 1\nfuzz ← fuzz + 1\nfuzz ← fuzz + 1","c":["fuzz holds 11","clip holds \"gr8\"","clip holds \"gr11\"","fuzz holds 8","clip holds 7"],"a":[0,1],"ex":"fuzz 5, clip 7, fuzz 8, clip \"gr8\" (uses fuzz at that moment), then fuzz goes 9, 10, 11. clip is not updated when fuzz changes later."},{"type":"mc","cat":"code","q":"What values are stored in zow and fly after the code segment below runs?","code":"fly ← \"to\" + \"day\"\nzow ← 4 - 1\nfly ← 3 * 3\nzow ← 4 + \"now\"","c":["zow: \"4now\", fly: 9","zow: 3, fly: \"today\"","zow: \"3now\", fly: 9","zow: \"4now\", fly: \"today9\""],"a":0,"ex":"Each variable keeps only its most recent value. zow ends as 4 concatenated with \"now\", and fly ends as 9. The earlier values are thrown away."},{"type":"mc","cat":"code","q":"What is displayed after the code segment below runs?","code":"kit ← 1\nboo ← kit + 1\nkit ← 5\nDISPLAY(boo)","c":["2","6","5","1"],"a":0,"ex":"boo was computed once as 1 + 1 = 2. Changing kit afterward does not go back and recompute boo."},{"type":"mc","cat":"code","q":"Kobe is testing variables for a basketball game. What will be the output of the code below?","code":"score ← 1\nshots ← 0\nshots ← shots + 2\nscore ← score + shots\nshots ← score\nDISPLAY(score)\nDISPLAY(shots)","c":["3 3","3 2","1 2","2 3"],"a":0,"ex":"shots becomes 2, score becomes 1 + 2 = 3, then shots gets a copy of score (3)."},{"type":"mc","cat":"code","q":"What will be the value of message after the code below runs?","code":"greeting ← \"Hi\"\nname ← \"Sam\"\nmessage ← greeting + \" \" + name + \"!\"","c":["\"Hi Sam!\"","\"HiSam!\"","\"greeting name!\"","\"Hi Sam !\""],"a":0,"ex":"Concatenation joins strings end-to-end exactly as written. The \" \" adds one space between the words; nothing is added before the \"!\"."},{"type":"mc","cat":"code","q":"What will the following code output to the console?","code":"var a = \"4\";\nvar b = \"2\";\nconsole.log(a + b);","c":["42","6","\"6\"","8"],"a":0,"ex":"Both values are strings (in quotes), so + concatenates them into \"42\" instead of adding."},{"type":"mc","cat":"code","q":"What will the following code output to the console?","code":"var x = 5;\nvar y = 2;\nconsole.log(x * y + x);","c":["15","35","52","25"],"a":0,"ex":"Multiplication happens before addition: 5 * 2 = 10, then 10 + 5 = 15. Both are numbers, so no concatenation."},{"type":"mc","cat":"code","q":"What will the following code output to the console?","code":"console.log(2 + 3 + \"5\");\nconsole.log(\"5\" + 2 + 3);","c":["55 then 523","10 then 10","235 then 523","55 then 55"],"a":0,"ex":"Expressions are evaluated left to right. 2 + 3 = 5 (numbers), then 5 + \"5\" = \"55\". In the second line \"5\" + 2 = \"52\" (string), then \"52\" + 3 = \"523\"."},{"type":"mc","cat":"code","q":"What is the result of the code below?","code":"var result = 5 + \"5\";\nconsole.log(result);","c":["55","10","Undefined","Error"],"a":0,"ex":"When + has a string on either side, it concatenates. 5 + \"5\" becomes \"55\"."},{"type":"mc","cat":"code","q":"A user types 5 into the text input \"numInput\" and clicks the button. What is printed to the console?","code":"onEvent(\"goButton\", \"click\", function() {\n  var n = getText(\"numInput\");\n  console.log(n + 1);\n});","c":["51","6","n1","Error"],"a":0,"ex":"getText always returns what was typed as a STRING. \"5\" + 1 is concatenation, giving \"51\". This is a common bug."},{"type":"mc","cat":"code","q":"The program below is run and the user clicks \"upButton\" FOUR times. What is the value of count afterward?","code":"var count = 0;\nonEvent(\"upButton\", \"click\", function() {\n  count = count + 1;\n});","c":["4","1","0","5"],"a":0,"ex":"This is the counter pattern. Each click takes the current value, adds 1, and stores it back: 1, 2, 3, 4."},{"type":"mc","cat":"code","q":"The program below is run. The user clicks \"upButton\" THREE times and \"downButton\" FIVE times. What is the value of degrees afterward?","code":"var degrees = 70;\nonEvent(\"upButton\", \"click\", function() {\n  degrees = degrees + 2;\n});\nonEvent(\"downButton\", \"click\", function() {\n  degrees = degrees - 2;\n});","c":["66","68","74","62"],"a":0,"ex":"Up 3 times: +6. Down 5 times: -10. 70 + 6 - 10 = 66."},{"type":"mc","cat":"code","q":"What will the code below print when the program runs and then button1 is clicked once?","code":"var x = 10;\nonEvent(\"button1\", \"click\", function() {\n  var x = 5;\n  console.log(x);\n});\nconsole.log(x);","c":["10 and then 5","5 and then 10","5 and then 5","10 and then 10"],"a":0,"ex":"The bottom console.log is sequential, so it runs first and prints the global x (10). When the button is clicked, the handler creates a LOCAL x of 5 and prints it."},{"type":"mc","cat":"code","q":"The program below is run. The user clicks \"setButton\" and then clicks \"showButton\". What is printed?","code":"var score = 0;\nonEvent(\"setButton\", \"click\", function() {\n  var score = 5;\n});\nonEvent(\"showButton\", \"click\", function() {\n  console.log(score);\n});","c":["0","5","undefined","Nothing is printed"],"a":0,"ex":"Using var inside the handler creates a separate LOCAL variable that is deleted when the handler finishes. The global score is never changed, so 0 prints."},{"type":"mc","cat":"code","q":"A programmer wants a \"lives\" counter that goes down by 1 each time the lime is touched. The label always shows 2 no matter how many times the lime is touched. Which change fixes the bug?","code":"var lives = 3;\nonEvent(\"lime\", \"mouseover\", function() {\n  var lives = 3;\n  lives = lives - 1;\n  setText(\"livesLabel\", lives);\n});","c":["Delete the line var lives = 3; inside the onEvent so the handler updates the global variable","Move the onEvent block above the line var lives = 3; so the handler is registered before the variable exists","Change lives = lives - 1 to lives = lives - 2 so the label shows the correct number of lives","Change the event type from \"mouseover\" to \"click\" so the handler only runs once per touch"],"a":0,"ex":"The var inside the handler creates a fresh local lives of 3 every time, so it always becomes 2. Create variables once, at the top, outside any onEvent."},{"type":"mc","cat":"code","q":"What type of value is stored in each variable below?","code":"var age = 25;\nvar zip = \"95127\";\nvar done = false;","c":["age: number, zip: string, done: Boolean","age: number, zip: number, done: string","age: string, zip: string, done: Boolean","age: number, zip: string, done: string"],"a":0,"ex":"No quotes and digits = number. Anything in quotes is a string, even if it looks like a number. true/false without quotes is a Boolean."},{"type":"ms","cat":"code","q":"Which of the following are NOT valid variable names in App Lab? Choose all that apply.","c":["2ndPlace","my score","high-score","playerScore","score2"],"a":[0,1,2],"ex":"Variable names must start with a letter and cannot contain spaces. A hyphen is read as subtraction. playerScore and score2 are valid."},{"type":"mc","cat":"code","q":"Which of the following is happening in the statement var lives = 3;?","c":["A variable named lives is declared and assigned an initial value of 3","A variable named lives is compared to 3","The value 3 is added to whatever lives already holds","A variable named lives is declared but has no value yet"],"a":0,"ex":"var creates (declares) the variable and = assigns it a starting value in the same line."},{"type":"mc","cat":"code","q":"Which reading of the statement score = score + 1 is correct in JavaScript?","c":["\"Take the current value of score, add 1, and store the result back in score.\"","\"score is always equal to itself plus one, for the rest of the program.\"","\"Check whether score is equal to score plus one, and produce true or false.\"","\"Create a brand new variable whose name is score + 1 and set it to 1.\""],"a":0,"ex":"In programming, = is the assignment operator: evaluate the right side first, then put the result in the variable on the left. It is not a statement of mathematical equality."},{"type":"mc","cat":"code","q":"What is displayed when the following code segment is run?","code":"temperature ← 65\nmoisture ← 30\nacidity ← 3\nDISPLAY(moisture)\nDISPLAY(acidity)\nDISPLAY(temperature)","c":["30 3 65","65 30 3","3 30 65","65 3 30"],"a":0,"ex":"DISPLAY statements run in the order they are written, not the order the variables were created."},{"type":"mc","cat":"code","q":"Elvira runs the code below. What will be the output?","code":"a ← 12\nDISPLAY(a)\nb ← 32\nDISPLAY(b)\na ← b\nb ← 52\nDISPLAY(a)\nDISPLAY(b)","c":["12 32 32 52","12 32 12 52","12 32 52 52","12 32 32 32"],"a":0,"ex":"a becomes a copy of b (32). Then b changes to 52, but a keeps 32 because variables are not connected."},{"type":"mc","cat":"code","q":"The program below is run. Which of the following could NOT possibly be the output?","code":"a ← RANDOM(1, 6)\nb ← a + 1\nDISPLAY(a)\nDISPLAY(b)","c":["4 4","1 2","6 7","3 4"],"a":0,"ex":"RANDOM runs once and a keeps that value. b is always exactly one more than a, so a and b can never be equal."},{"type":"mc","cat":"code","q":"The program below is run. Which value could NOT be displayed?","code":"x ← RANDOM(1, 3) * 2\nDISPLAY(x)","c":["3","2","4","6"],"a":0,"ex":"RANDOM(1, 3) is 1, 2, or 3. Multiplied by 2 gives 2, 4, or 6. An odd number like 3 is impossible."},{"type":"mc","cat":"code","q":"The program below is run. Which of the following COULD be the output?","code":"a ← RANDOM(1, 10)\nb ← RANDOM(10, 20)\nDISPLAY(a)\nDISPLAY(a)\nDISPLAY(b)\nDISPLAY(b)","c":["10 10 10 10","10 5 10 5","3 3 9 9","1 2 15 15"],"a":0,"ex":"a is displayed twice, so the first two values must match; same for b. a is 1-10 and b is 10-20, so 10 10 10 10 is possible. 9 is outside b's range."},{"type":"mc","cat":"code","q":"What does Math.round(7.2) return?","c":["7","8","7.2","72"],"a":0,"ex":"Math.round rounds to the nearest whole number. 7.2 is closer to 7. (Used in Lesson 2 for the Fahrenheit-to-Celsius thermostat.)"},{"type":"mc","cat":"code","q":"In JavaScript, which operator is used to find the remainder of a division?","c":["%","/","\\","÷"],"a":0,"ex":"% is the modulus operator. 17 % 5 is 2 because 17 divided by 5 is 3 with a remainder of 2. On the AP exam it is written MOD."},{"type":"mc","cat":"code","q":"What is the value of 17 % 5?","c":["2","3","3.4","12"],"a":0,"ex":"5 goes into 17 three times (15), leaving a remainder of 2."},{"type":"mc","cat":"code","q":"What is the value of 4 % 7?","c":["4","0","3","7"],"a":0,"ex":"7 goes into 4 zero times, so the whole 4 is left over as the remainder."},{"type":"mc","cat":"code","q":"What is displayed after the code segment below runs?","code":"x ← 23\ny ← x MOD 6\nz ← x - y\nDISPLAY(y)\nDISPLAY(z)","c":["5 18","3 20","5 17","3 17"],"a":0,"ex":"23 MOD 6: 6 goes in 3 times (18), remainder 5. Then z = 23 - 5 = 18."},{"type":"mc","cat":"code","q":"Which condition is true exactly when the variable lemons is a multiple of 5?","c":["lemons % 5 == 0","lemons / 5 == 0","lemons % 5 == 5","lemons - 5 == 0"],"a":0,"ex":"A multiple of 5 divides evenly, so the remainder is 0. lemons / 5 == 0 is only true when lemons is 0."},{"type":"mc","cat":"code","q":"The code below is run with score set to 7. What is printed?","code":"if (score % 2 == 0) {\n  console.log(\"even\");\n} else {\n  console.log(\"odd\");\n}","c":["odd","even","evenodd","Nothing is printed"],"a":0,"ex":"7 % 2 is 1, not 0, so the condition is false and the else runs. Exactly one branch of an if-else ever runs."},{"type":"mc","cat":"code","q":"What is the value of the expression 10 - 4 / 2 + 3?","c":["11","6","2","6.5"],"a":0,"ex":"Division first: 4 / 2 = 2. Then left to right: 10 - 2 = 8, 8 + 3 = 11."},{"type":"mc","cat":"code","q":"What is the value of the expression (3 + 4) * 2 - 6 % 4?","c":["12","10","8","14"],"a":0,"ex":"Parentheses: 7. Then 7 * 2 = 14 and 6 % 4 = 2. Finally 14 - 2 = 12. % has the same priority as * and /."},{"type":"mc","cat":"code","q":"Assume x holds 7. What does the expression (x > 5) AND (x < 7) evaluate to?","c":["false","true","7","5"],"a":0,"ex":"x > 5 is true, but x < 7 is false (7 is not less than 7). AND needs both to be true."},{"type":"mc","cat":"code","q":"Assume x holds 7. What does the expression NOT (x ≠ 7) evaluate to?","c":["true","false","7","It causes an error"],"a":0,"ex":"x ≠ 7 is false because x IS 7. NOT flips false to true."},{"type":"mc","cat":"code","q":"For which value of n does the expression (n > 3 && n < 8) && n != 5 evaluate to true?","c":["6","5","3","8"],"a":0,"ex":"n must be greater than 3, less than 8, and not 5. 3 and 8 fail the strict < and >, and 5 is excluded."},{"type":"ms","cat":"code","q":"Assume A is false and B is true. Which of the following expressions evaluate to true? Choose all that apply.","c":["(A || B) && !A","!(A && B)","A || !B","(A && B) || !B","!A && B"],"a":[0,1,4],"ex":"(false||true)&&true = true. !(false) = true. false||false = false. false||false = false. true&&true = true."},{"type":"ms","cat":"code","q":"The program below is run. Which of the printed Boolean values are true? Choose all that apply.","code":"var fruitServings = 3;\nvar vegServings = 5;\nvar grainServings = 4;\nconsole.log((fruitServings > 3) && (vegServings > 5));       // Q1\nconsole.log((grainServings <= 4) && (fruitServings <= 4));  // Q2\nconsole.log((grainServings == 5) || (fruitServings != 2));  // Q3","c":["Q1","Q2","Q3"],"a":[1,2],"ex":"Q1: 3 > 3 is false, so AND is false. Q2: 4 <= 4 and 3 <= 4 are both true. Q3: grain == 5 is false but fruit != 2 is true, and OR needs only one."},{"type":"mc","cat":"code","q":"Which expression is true exactly when age is between 13 and 19, INCLUDING 13 and 19?","c":["age >= 13 && age <= 19","age > 13 && age < 19","age >= 13 || age <= 19","age > 12 || age < 20"],"a":0,"ex":"Inclusive means >= and <=, and \"between\" means both must be true (AND). The || versions are true for every age."},{"type":"mc","cat":"code","q":"Which expression always gives the same result as !(x > 5)?","c":["x <= 5","x < 5","x >= 5","x > 5"],"a":0,"ex":"The opposite of \"greater than 5\" is \"5 or less.\" x < 5 is wrong because it is false when x is exactly 5."},{"type":"mc","cat":"code","q":"I can adopt a cat if I have exactly 40 dollars AND I am over 14 years old. I am 17 and have 39 dollars. What does money == 40 && age > 14 evaluate to?","c":["false","true","39","It depends on the flowchart"],"a":0,"ex":"money == 40 is false (39 is not 40). age > 14 is true. false && true is false."},{"type":"mc","cat":"code","q":"What does the expression 3 + 1 < 5 - 2 evaluate to?","c":["false","true","4","3"],"a":0,"ex":"Reduce each side to one value first: 4 < 3. That is false."},{"type":"mc","cat":"code","q":"What does the expression (3 + 1 < 5 - 4 || 3 + 1 < 5) evaluate to?","c":["true","false","4","5"],"a":0,"ex":"Left: 4 < 1 is false. Right: 4 < 5 is true. OR is true if either side is true."},{"type":"mc","cat":"code","q":"Have I won? I win if my score multiplied by my lives is greater than 10. Which inputs make score * lives > 10 evaluate to true?","c":["score = 6, lives = 2","score = 3, lives = 3","score = 1, lives = 10","score = -5, lives = 2"],"a":0,"ex":"6 * 2 = 12 > 10. The others give 9, 10 (not greater than 10), and -10."},{"type":"mc","cat":"code","q":"A weather app predicts rain if the temperature is greater than 32 AND overcast is \"cloudy\". Which variable values produce a prediction of rain?","code":"temp > 32 && overcast == \"cloudy\"","c":["temp = 40, overcast = \"cloudy\"","temp = 32, overcast = \"cloudy\"","temp = 50, overcast = \"sunny\"","temp = 20, overcast = \"cloudy\""],"a":0,"ex":"Both parts must be true. 32 is not greater than 32."},{"type":"mc","cat":"code","q":"Which of the following correctly checks whether the variable answer holds the string \"yes\" in JavaScript?","c":["answer == \"yes\"","answer = \"yes\"","answer == yes","\"answer\" == \"yes\""],"a":0,"ex":"== compares; = assigns. The string must be in quotes, and the variable name must NOT be in quotes."},{"type":"mc","cat":"code","q":"The program below asks a user for a number. What number must the user enter for \"COLD\" to be displayed?","code":"number ← INPUT()\nIF (number ≥ 10)\n{\n  IF (number ≤ 20)\n  {\n    DISPLAY(\"MEDIUM\")\n  }\n  ELSE\n  {\n    DISPLAY(\"HOT\")\n  }\n}\nELSE\n{\n  DISPLAY(\"COLD\")\n}","c":["5","10","15","20"],"a":0,"ex":"COLD is in the outer ELSE, which runs only when number ≥ 10 is false, meaning number is less than 10."},{"type":"mc","cat":"code","q":"Using the same program, which input causes \"HOT\" to be displayed?","code":"number ← INPUT()\nIF (number ≥ 10)\n{\n  IF (number ≤ 20)\n  {\n    DISPLAY(\"MEDIUM\")\n  }\n  ELSE\n  {\n    DISPLAY(\"HOT\")\n  }\n}\nELSE\n{\n  DISPLAY(\"COLD\")\n}","c":["25","20","10","5"],"a":0,"ex":"HOT needs number ≥ 10 to be true AND number ≤ 20 to be false, so number must be above 20. 20 and 10 display MEDIUM; 5 displays COLD."},{"type":"mc","cat":"code","q":"What will be displayed after this code segment is run?","code":"score ← 250\nIF (score = 300)\n{\n  DISPLAY(\"Perfect Game!\")\n}\nELSE\n{\n  IF (score > 200)\n  {\n    DISPLAY(\"You Win!\")\n  }\n  ELSE\n  {\n    DISPLAY(\"You Lose!\")\n  }\n}","c":["You Win!","Perfect Game!","You Lose!","Nothing will be displayed"],"a":0,"ex":"On the AP exam, = in an IF condition is a comparison. 250 = 300 is false, so the ELSE runs; 250 > 200 is true."},{"type":"mc","cat":"code","q":"What will be printed when the code below runs with score set to 18?","code":"if (score > 5) {\n  console.log(\"small\");\n} else if (score > 10) {\n  console.log(\"smaller\");\n} else if (score > 15) {\n  console.log(\"smallest\");\n} else {\n  console.log(\"big\");\n}","c":["small","smallest","small smaller smallest","big"],"a":0,"ex":"An if-else-if chain runs only the FIRST branch whose condition is true. 18 > 5 is true immediately, so the other conditions are never checked. This is why the most specific case must go first."},{"type":"mc","cat":"code","q":"The lemon game sets the lemon size based on score. What width does the lemon get when score is 11?","code":"if (score > 15) {\n  setProperty(\"lemon\", \"width\", 30);\n} else if (score > 10) {\n  setProperty(\"lemon\", \"width\", 60);\n} else if (score > 5) {\n  setProperty(\"lemon\", \"width\", 100);\n} else {\n  setProperty(\"lemon\", \"width\", 140);\n}","c":["60","30","100","140"],"a":0,"ex":"11 > 15 is false, 11 > 10 is true, so width 60. The chain stops there."},{"type":"mc","cat":"code","q":"Using the same lemon code, what width does the lemon get when score is exactly 5?","code":"if (score > 15) {\n  setProperty(\"lemon\", \"width\", 30);\n} else if (score > 10) {\n  setProperty(\"lemon\", \"width\", 60);\n} else if (score > 5) {\n  setProperty(\"lemon\", \"width\", 100);\n} else {\n  setProperty(\"lemon\", \"width\", 140);\n}","c":["140","100","60","30"],"a":0,"ex":"5 > 5 is false (not strictly greater), so every condition is false and the else runs."},{"type":"mc","cat":"code","q":"What is printed when the code below runs with x set to 12?","code":"if (x > 10) {\n  console.log(\"A\");\n}\nif (x > 5) {\n  console.log(\"B\");\n}","c":["A then B","A only","B only","Nothing"],"a":0,"ex":"These are two SEPARATE if statements, not an if-else-if chain, so each is checked on its own. Both conditions are true."},{"type":"mc","cat":"code","q":"What is printed when the code below runs with x set to 12?","code":"if (x > 10) {\n  console.log(\"A\");\n} else if (x > 5) {\n  console.log(\"B\");\n}","c":["A only","A then B","B only","Nothing"],"a":0,"ex":"In an if-else-if chain, once a condition is true the rest are skipped. Compare this with two separate if statements."},{"type":"mc","cat":"code","q":"What is printed when the code below runs with x set to 3?","code":"if (x > 5) {\n  console.log(\"big\");\n}\nconsole.log(\"done\");","c":["done","big then done","big","Nothing"],"a":0,"ex":"The condition is false, so the code inside is skipped. The last line is outside the if, so it always runs. An if does not need an else."},{"type":"ms","cat":"code","q":"A teacher writes the grading code below. For which scores does the code display the WRONG letter grade? Choose all that apply.","code":"if (score >= 70) {\n  console.log(\"C\");\n} else if (score >= 80) {\n  console.log(\"B\");\n} else if (score >= 90) {\n  console.log(\"A\");\n} else {\n  console.log(\"F\");\n}","c":["95","85","72","50"],"a":[0,1],"ex":"Any score of 70 or more hits the first condition and prints C, so 95 and 85 are wrong. The most specific case (>= 90) should be checked first."},{"type":"mc","cat":"code","q":"A movie theater charges $5 for kids under 12, $7 for people 65 or older, and $10 for everyone else. Using the code below, what price is set for a 12-year-old?","code":"if (age < 12) {\n  price = 5;\n} else if (age >= 65) {\n  price = 7;\n} else {\n  price = 10;\n}","c":["10","5","7","No price is set"],"a":0,"ex":"12 < 12 is false and 12 >= 65 is false, so the else sets 10."},{"type":"mc","cat":"code","q":"The login code below runs when the user selects \"Mellow Yellow\" and types \"lemon123\". What happens?","code":"if ((userName == \"Lemonhead\") && (password == \"lemon123\")) {\n  setScreen(\"gameScreen\");\n} else if ((userName == \"Mellow Yellow\") && (password == \"iLoveLemons\")) {\n  setScreen(\"gameScreen\");\n} else {\n  playSound(\"sound://category_instrumental/harpe_downscale_1.mp3\");\n}","c":["The error sound plays and the screen does not change","The game screen appears because \"lemon123\" is a valid password","The game screen appears because \"Mellow Yellow\" is a valid user name","The game screen appears twice"],"a":0,"ex":"Each condition needs BOTH the right name AND the matching password. Neither pair matches, so the else runs."},{"type":"mc","cat":"code","q":"What will the following code print?","code":"var score = 45;\nif (score >= 50) {\n  console.log(\"Pass\");\n} else {\n  console.log(\"Fail\");\n}","c":["Fail","Pass","PassFail","FailPass"],"a":0,"ex":"45 >= 50 is false, so only the else branch runs."},{"type":"mc","cat":"code","q":"The game should end when the player has no lives left. Which version of the lime handler correctly sends the player to \"gameOverScreen\" at the right moment?","c":["onEvent(\"lime\", \"mouseover\", function() {\n  lives = lives - 1;\n  if (lives <= 0) {\n    setScreen(\"gameOverScreen\");\n  }\n});","onEvent(\"lime\", \"mouseover\", function() {\n  if (lives <= 0) {\n    setScreen(\"gameOverScreen\");\n  }\n});\nlives = lives - 1;","if (lives <= 0) {\n  setScreen(\"gameOverScreen\");\n}\nonEvent(\"lime\", \"mouseover\", function() {\n  lives = lives - 1;\n});","onEvent(\"lime\", \"mouseover\", function() {\n  if (lives <= 0) {\n    lives = lives - 1;\n    setScreen(\"gameOverScreen\");\n  }\n});"],"a":0,"ex":"The check must happen inside the handler, AFTER lives decreases. Option 3 checks only once at startup. Option 4 never subtracts while lives is above 0."},{"type":"mc","cat":"code","q":"Exactly how many of the console.log statements below can ever run during a single execution of this code?","code":"if (temp > 90) {\n  console.log(\"hot\");\n} else if (temp > 60) {\n  console.log(\"warm\");\n} else {\n  console.log(\"cold\");\n}","c":["Exactly one","Up to two","All three","Zero or one"],"a":0,"ex":"With a final else, an if-else-if chain always runs exactly one branch: the first true one, or the else if none are true."},{"type":"mc","cat":"code","q":"How many times will \"Here comes the chorus\" be printed?","code":"function chorus() {\n  console.log(\"Here comes the chorus\");\n}\nconsole.log(\"Verse 1\");\nchorus();\nconsole.log(\"Verse 2\");\nchorus();","c":["Twice","Once","Three times","Never"],"a":0,"ex":"Declaring a function does not run it. The code inside runs once for each function call, and chorus() is called twice."},{"type":"mc","cat":"code","q":"What is printed when the program below runs?","code":"function warn() {\n  console.log(\"Watch out!\");\n}\nconsole.log(\"Start\");","c":["Start","Watch out! then Start","Start then Watch out!","Nothing"],"a":0,"ex":"warn is defined but never called, so its code never runs."},{"type":"mc","cat":"code","q":"What is printed when the program below runs?","code":"function a() {\n  console.log(\"1\");\n}\nfunction b() {\n  console.log(\"2\");\n}\nb();\na();\nb();","c":["2 1 2","1 2","1 2 1","2 1"],"a":0,"ex":"The order of the CALLS determines the output, not the order the functions were declared."},{"type":"mc","cat":"code","q":"What is printed when the program below runs?","code":"function inner() {\n  console.log(\"in\");\n}\nfunction outer() {\n  console.log(\"out\");\n  inner();\n}\nouter();\ninner();","c":["out in in","out in","in out in","in in out"],"a":0,"ex":"outer() prints \"out\" and then calls inner() which prints \"in\". Then inner() is called again on its own."},{"type":"mc","cat":"code","q":"Read the program below. On what line(s) is the updateScreen function being CALLED?","code":"var count = 0;                              // Line 1\nupdateScreen();                             // Line 2\nonEvent(\"upButton\", \"click\", function() {   // Line 3\n  count = count + 1;                        // Line 4\n  updateScreen();                           // Line 5\n});                                         // Line 6\nfunction updateScreen() {                   // Line 7\n  setText(\"countLabel\", count);             // Line 8\n}                                           // Line 9","c":["Lines 2 and 5","Lines 7-9","Line 7 only","Lines 2, 5, and 7"],"a":0,"ex":"A call is the name followed by (); on its own line. Lines 7-9 are the declaration (definition), not a call."},{"type":"mc","cat":"code","q":"Using the same program, on what line(s) is the updateScreen function DECLARED?","code":"var count = 0;                              // Line 1\nupdateScreen();                             // Line 2\nonEvent(\"upButton\", \"click\", function() {   // Line 3\n  count = count + 1;                        // Line 4\n  updateScreen();                           // Line 5\n});                                         // Line 6\nfunction updateScreen() {                   // Line 7\n  setText(\"countLabel\", count);             // Line 8\n}                                           // Line 9","c":["Lines 7-9","Lines 2 and 5","Line 2 only","Lines 3-6"],"a":0,"ex":"The declaration starts with the word function, gives the name, and contains the code between the braces."},{"type":"mc","cat":"code","q":"This program draws a building in the console. How many lines are printed in total?","code":"roof();\nfloor();\nfloor();\nfloor();\nlobby();\nfunction roof() {\n  console.log(\"  ==============\");\n  console.log(\"  |------------|\");\n}\nfunction floor() {\n  console.log(\"  |-[]--[]--[]-|\");\n  console.log(\"  |------------|\");\n}\nfunction lobby() {\n  console.log(\"  |----____----|\");\n  console.log(\"  |----|  ,|---|\");\n  console.log(\"  |----|   |---|\");\n}","c":["11","9","7","5"],"a":0,"ex":"roof prints 2 lines, each floor prints 2 (called 3 times = 6), lobby prints 3. 2 + 6 + 3 = 11."},{"type":"mc","cat":"code","q":"After the program below runs, what are the values of apples and dollars?","code":"var apples = 0;\nvar dollars = 2;\nbuyApple();\nbuyApple();\nbuyApple();\nfunction buyApple() {\n  if (dollars > 0) {\n    apples = apples + 1;\n    dollars = dollars - 1;\n  } else {\n    console.log(\"I don't have any money left\");\n  }\n}","c":["apples: 2, dollars: 0","apples: 3, dollars: -1","apples: 3, dollars: 0","apples: 2, dollars: 1"],"a":0,"ex":"First two calls buy apples (dollars 2 to 1 to 0). The third call finds dollars > 0 false, so it prints the message instead."},{"type":"mc","cat":"code","q":"What is printed after the program below runs?","code":"var lives = 3;\nfunction loseLife() {\n  lives = lives - 1;\n}\nloseLife();\nloseLife();\nconsole.log(lives);","c":["1","3","2","0"],"a":0,"ex":"Each call changes the GLOBAL lives because there is no var inside the function. 3 to 2 to 1."},{"type":"mc","cat":"code","q":"What is printed after the program below runs?","code":"var dollars = 5;\nfunction spend() {\n  var dollars = 4;\n}\nspend();\nconsole.log(dollars);","c":["5","4","1","undefined"],"a":0,"ex":"var inside the function creates a separate LOCAL variable. The global dollars is never touched."},{"type":"mc","cat":"code","q":"The program below is run. The user clicks \"upButton\" 22 times and then \"downButton\" 2 times. What does countLabel display, and what color is its text?","code":"var count = 0;\nupdateScreen();\nonEvent(\"upButton\", \"click\", function() {\n  count = count + 1;\n  updateScreen();\n});\nonEvent(\"downButton\", \"click\", function() {\n  count = count - 1;\n  updateScreen();\n});\nfunction updateScreen() {\n  setText(\"countLabel\", count);\n  if (count > 20) {\n    setProperty(\"countLabel\", \"text-color\", \"green\");\n  }\n}","c":["20, green","20, its original color","22, green","20, red"],"a":0,"ex":"count ends at 22 - 2 = 20. The color turned green when count passed 20, and nothing in the program ever changes it back, so it stays green."},{"type":"mc","cat":"code","q":"Which line of code will cause an error when the program runs?","code":"function buyApple() {        // Line 1\n  console.log(\"bought\");      // Line 2\n}                             // Line 3\nbuyApple();                   // Line 4\nbuyapple();                   // Line 5","c":["Line 5","Line 4","Line 1","Line 2"],"a":0,"ex":"Function names must be spelled exactly the same in the declaration and the call. buyapple is not the same name as buyApple."},{"type":"mc","cat":"code","q":"Which of the following correctly defines a function in JavaScript?","c":["function showScore() {\n  console.log(score);\n}","function showScore {\n  console.log(score);\n}","func showScore() {\n  console.log(score);\n}","showScore() = function {\n  console.log(score);\n}"],"a":0,"ex":"The keyword is function, then the name, then (), then the code in { }."},{"type":"mc","cat":"code","q":"In the program below, the function is declared at the BOTTOM, after the line that calls it. What happens when the program runs?","code":"greet();\nfunction greet() {\n  console.log(\"Hi there!\");\n}","c":["\"Hi there!\" is printed","Nothing is printed because the function is declared after the call","An error occurs because the call comes first","\"greet\" is printed"],"a":0,"ex":"In App Lab you can declare functions at the bottom of your program and call them above. This is the recommended structure from Lesson 10."},{"type":"mc","cat":"code","q":"What will be displayed after the code segment below runs?","code":"day ← 6\nPROCEDURE checkDay()\n{\n  IF (day = 6 OR day = 7)\n  {\n    DISPLAY(\"Day off\")\n  }\n  ELSE\n  {\n    DISPLAY(\"School day\")\n  }\n}\ncheckDay()\nday ← 2\ncheckDay()","c":["Day off School day","School day Day off","Day off Day off","School day School day"],"a":0,"ex":"The first call sees day = 6 (Day off). Then day changes to 2, and the second call sees the new value (School day)."},{"type":"mc","cat":"code","q":"The two lemon and lime handlers below contain the same three lines. Which rewrite uses a function to remove the repeated code while keeping the same behavior?","code":"onEvent(\"lemon\", \"mouseover\", function() {\n  score = score + 1;\n  setProperty(\"lemon\", \"x\", randomNumber(50, 220));\n  setText(\"scoreLabel\", score);\n});\nonEvent(\"lime\", \"mouseover\", function() {\n  score = score + 1;\n  setProperty(\"lemon\", \"x\", randomNumber(50, 220));\n  setText(\"scoreLabel\", score);\n});","c":["Declare function update() containing the three lines once, and replace the lines in each handler with update();","Declare function update() containing the three lines and call update(); once at the top of the program","Move the three lines outside both handlers so they run once","Declare function update() containing the three lines but do not call it, since functions run automatically when events happen"],"a":0,"ex":"Declare the repeated code once, then call it from each place it was used. Calling it only at startup, or not at all, changes the behavior."},{"type":"mc","cat":"vocab","q":"A programmer writes score > 10 inside an if statement. Which term BEST describes score > 10?","c":["Boolean expression","Boolean value","Assignment operator","Concatenation"],"a":0,"ex":"It evaluates to true or false, so it is a Boolean expression. The RESULT (true or false) is a Boolean value."},{"type":"mc","cat":"vocab","q":"A variable named isGameOver holds false. Which term BEST describes false?","c":["Boolean value","Boolean expression","String","Relational operator"],"a":0,"ex":"A Boolean value is a data type that is either true or false. Without quotes, false is not a string."},{"type":"mc","cat":"vocab","q":"The code \"rock\" + \" and \" + \"roll\" produces \"rock and roll\". Which term BEST describes what + is doing here?","c":["Concatenation","Arithmetic operator","Logical operator","Assignment operator"],"a":0,"ex":"Concatenation joins two or more strings end-to-end to make a new string."},{"type":"mc","cat":"vocab","q":"In the AP pseudocode statement total ← price + tax, which term BEST describes ←?","c":["Assignment operator","Relational operator","Arithmetic operator","Logical operator"],"a":0,"ex":"The assignment operator allows a program to change the value represented by a variable. In JavaScript it is written =."},{"type":"mc","cat":"vocab","q":"Which term BEST describes the group of symbols &&, ||, and ! (written AND, OR, NOT on the AP exam)?","c":["Logical operators","Relational operators","Arithmetic operators","Assignment operators"],"a":0,"ex":"Logical operators NOT, AND, and OR combine or flip Boolean values and evaluate to a Boolean value."},{"type":"mc","cat":"vocab","q":"Which term BEST describes the group of symbols <, >, <=, >=, ==, and != ?","c":["Comparison (relational) operators","Logical operators","Arithmetic operators","Assignment operators"],"a":0,"ex":"Comparison operators test the relationship between two values and produce a Boolean value. The AP framework calls them relational operators."},{"type":"mc","cat":"vocab","q":"Which of the following is NOT an arithmetic operator?","c":["==","%","*","-"],"a":0,"ex":"Arithmetic operators are +, -, *, /, and % (modulus). == is a comparison operator."},{"type":"mc","cat":"vocab","q":"A program has a named block of code called updateScreen that can be reused. Which term BEST describes updateScreen?","c":["Function (procedure)","Function call","Variable","Conditional statement"],"a":0,"ex":"A function is a named group of programming instructions, also called a procedure."},{"type":"mc","cat":"vocab","q":"Inside an onEvent, the line updateScreen(); appears. Which term BEST describes this line?","c":["Function call","Function","Procedure","Expression"],"a":0,"ex":"A function call is a command that executes the code within a function. The function itself is the named group of instructions."},{"type":"mc","cat":"vocab","q":"Which term BEST describes an if / else if / else block?","c":["Conditional statement","Logical operator","Function call","Concatenation"],"a":0,"ex":"A conditional statement affects the sequential flow of control by executing different statements based on the value of a Boolean expression."},{"type":"mc","cat":"vocab","q":"Which term is defined as \"determines which parts of an algorithm are executed based on a condition being true or false\"?","c":["Selection","Evaluate","Boolean value","Procedure"],"a":0,"ex":"Selection is the general idea; conditional statements (if/else) are how you write it in code."},{"type":"mc","cat":"vocab","q":"Which term is defined as \"an ordered sequence of characters\"?","c":["String","Variable","Expression","Boolean value"],"a":0,"ex":"A string is an ordered sequence of characters, written in quotes."},{"type":"mc","cat":"vocab","q":"\"4 * 3 + 2 is ____ to produce the single value 14.\" Which word completes the sentence?","c":["evaluated","assigned","concatenated","called"],"a":0,"ex":"Expressions are evaluated to produce a single value."},{"type":"mc","cat":"vocab","q":"Which term is defined as \"a named reference to a value that can be used repeatedly throughout a program\"?","c":["Variable","Function","String","Function call"],"a":0,"ex":"A variable is a named reference to a value. A function is a named group of instructions, which is a different thing."},{"type":"mc","cat":"vocab","q":"A diagram uses rectangles for statements, diamonds for decisions, and labeled arrows to show the flow. What is this diagram called?","c":["Flowchart","Truth table","Program specification","Pseudocode"],"a":0,"ex":"A flowchart shows the steps and decisions in a computer program."},{"type":"mc","cat":"vocab","q":"A table lists every possible combination of true and false for A and B, along with the result of A && B for each. What is this table called?","c":["Truth table","Flowchart","Boolean value","Selection"],"a":0,"ex":"A truth table is a breakdown of all the possible truth values returned by a logical expression."},{"type":"mc","cat":"vocab","q":"Which of the following BEST describes the difference between a relational operator and a logical operator?","c":["A relational operator compares two values to produce a Boolean; a logical operator combines or flips Boolean values to produce a Boolean","A relational operator joins two strings; a logical operator adds two numbers","A relational operator stores a value in a variable; a logical operator compares two variables","A relational operator is used only in pseudocode; a logical operator is used only in JavaScript"],"a":0,"ex":"x > 5 uses a relational operator. (x > 5) && (y < 3) uses a logical operator to combine two Boolean results."},{"type":"mc","cat":"vocab","q":"How does the AP framework definition of a procedure compare to the class definition of a function?","c":["They describe the same idea: a named group of programming instructions, which may have parameters and return values","A procedure is a single instruction, while a function is a group of instructions","A procedure can only be called once, while a function can be called many times","A procedure is a type of variable, while a function is a type of conditional"],"a":0,"ex":"\"Function\" and \"procedure\" are two names for the same thing. The AP version adds that it may have parameters and return values."},{"type":"mc","cat":"vocab","q":"Which of the following is NOT an expression, according to the AP definition (a value, a variable, an operator, or a procedure call that returns a value)?","c":["score ← score + 1","score + 1","score","5"],"a":0,"ex":"score ← score + 1 is an assignment statement. It contains an expression (score + 1) on the right, but the whole line stores a value rather than evaluating to one."},{"type":"mc","cat":"vocab","q":"Which of these is the best explanation of pseudocode?","c":["A language that represents concepts across programming languages but cannot actually be run by a computer","A standard programming language that is understood by all computers","A programming language that looks exactly like natural human language","Code that has too many mistakes in it to qualify as real code"],"a":0,"ex":"Pseudocode (like the AP reference sheet language) shows the logic without being a real runnable language."},{"type":"mc","cat":"vocab","q":"A variable is created with var inside an onEvent and is deleted once the onEvent finishes running. Which term BEST describes this variable?","c":["Local variable","Global variable","Boolean value","Function call"],"a":0,"ex":"Local variables are temporary and can be used only where they were created. Global variables are created outside onEvents and can be used anywhere."},{"type":"mc","cat":"vocab","q":"Which term BEST describes 4 * 3 + 2?","c":["Expression","Assignment operator","Conditional statement","Boolean value"],"a":0,"ex":"An expression is a combination of operators and values that evaluates to a single value."},{"type":"ms","cat":"vocab","q":"Which of the following are logical operators? Choose all that apply.","c":["&&","||","!","!=","=="],"a":[0,1,2],"ex":"&& (AND), || (OR), and ! (NOT) are logical operators. != and == are comparison operators, even though != contains an !."},{"type":"ms","cat":"vocab","q":"Which of the following always evaluate to a Boolean value? Choose all that apply.","c":["x > 5","(a == 3) || (b == 4)","!(done)","score + 1","\"true\" + \"false\""],"a":[0,1,2],"ex":"Comparisons and logical operations produce true or false. score + 1 is a number. \"true\" + \"false\" is a string (\"truefalse\")."},{"type":"mc","cat":"dev","q":"When a computer runs the statement pow ← pow + 1, what does it do FIRST?","c":["Evaluate the expression pow + 1 using the current value of pow","Store the number 1 in pow, replacing whatever value it held before","Check whether pow is equal to pow + 1 and produce a Boolean value","Delete the old value of pow so that the variable is empty again"],"a":0,"ex":"Evaluate first, then assign. The right side is computed using the current value, then the result replaces the old value."},{"type":"mc","cat":"dev","q":"Which statement BEST describes what happens to a variable's old value when it is assigned a new one?","c":["The old value is deleted forever and replaced by the new value","The old value is saved so the variable holds both","The old value moves to the next variable created","The old value is added to the new one"],"a":0,"ex":"A variable can hold only one value at a time (like a baggie with one sticky)."},{"type":"mc","cat":"dev","q":"b ← a is run, and then a is changed. Which statement BEST describes the effect on b?","c":["b does not change, because assignment copies the value and does not connect the variables","b changes to match a, because assigning one variable to another links them together","b becomes 0, because changing a clears every variable that was copied from it","b changes only if a was changed to a larger number than it held before"],"a":0,"ex":"Assignment just moves information around. It does not \"connect\" variables."},{"type":"mc","cat":"dev","q":"What is the difference between = in math class and = in JavaScript?","c":["In math it means two things are equal forever; in JavaScript it means \"put this value in this variable\"","In math it means \"put this value in this variable\"; in JavaScript it means two things are equal forever","They mean exactly the same thing in both","In JavaScript = compares two values and produces true or false"],"a":0,"ex":"In JavaScript = is the assignment operator. Comparing for equality uses ==."},{"type":"mc","cat":"dev","q":"According to the Lesson 3 guidelines, where should you create your variables?","c":["Once, at the top of the program, outside any function or onEvent","Inside each onEvent that uses them, so each handler has its own copy","At the bottom of the program, after the functions","Anywhere, as long as you use var every time you change the value"],"a":0,"ex":"Use var only once, at the top, outside functions and onEvents. Using var again inside a handler creates a confusing local variable."},{"type":"mc","cat":"dev","q":"A program has a global variable count and a handler that contains var count = count + 1. Why is this code likely to cause a bug?","c":["It creates a second, local variable also named count, so changing it has no effect on the global count","It is a syntax error, because the keyword var can never be used in the same line as +","It makes count increase by 2 on every click instead of 1, because count is updated twice","It deletes the onEvent after the first click, because var can only run once per program"],"a":0,"ex":"There are now two different variables named count. The local one is deleted when the handler ends."},{"type":"mc","cat":"dev","q":"When writing an if-else-if statement, why should the MOST SPECIFIC condition be placed first?","c":["Because the chain stops at the first true condition, so a broader condition placed first would catch cases meant for the specific one","Because the computer checks the conditions in an if-else-if chain from the bottom up, so the last one listed is checked first","Because specific conditions are evaluated faster than general ones, so placing them first makes the whole program run more quickly","Because only the very first condition in any if-else-if chain is ever checked, and the remaining conditions are ignored"],"a":0,"ex":"If score > 5 comes before score > 15, a score of 18 is caught by the first one and never reaches the specific case."},{"type":"mc","cat":"dev","q":"Before comparing the two sides of 3 + 6 < 8, what must happen?","c":["Each side is reduced to a single value, so 9 < 8 is compared","The 6 and 8 are compared first, since they are next to the operator","The comparison is done first, then 3 is added","Nothing; the computer compares all three numbers at once"],"a":0,"ex":"Each side of a comparison operator is evaluated to one value first. Then the single values are compared."},{"type":"mc","cat":"dev","q":"Which of the following BEST describes the two steps needed to use a function?","c":["Define (declare) the function by giving a name to a block of code, then call it to run that code","Call the function, then define it once the call finishes","Create a variable with the function's name, then assign it a value","Write an onEvent, then put the function's name in the event type"],"a":0,"ex":"From the Lesson 9 slides: two steps, define a function and call the function."},{"type":"mc","cat":"dev","q":"Which of the following are benefits of creating functions in your code?\n\nI. They remove repeated code\nII. They help keep your code organized\nIII. They make it easier to maintain your code","c":["I, II, and III","I and II only","II and III only","I only"],"a":0,"ex":"All three are benefits. If you need to change repeated code, you change it in one place."},{"type":"mc","cat":"dev","q":"Which rules apply to function names in App Lab?","c":["Same rules as variables: must begin with a letter, no spaces, and must be spelled the same in the declaration and every call","Function names must always be written in quotes, both when the function is declared and when it is called","Function names must start with a number so App Lab can tell them apart from variable names in the program","Function names may contain spaces, as long as the name is followed by () every time the function is called"],"a":0,"ex":"From Lesson 10: function names follow the same rules as variables."},{"type":"mc","cat":"dev","q":"Lesson 3 added a new debugging tool for variables. What does a watcher do?","c":["Shows the current value of a variable and updates it as the program runs","Stops the program completely the moment any variable changes its value","Prints every single line of the program to the console as it is executed","Locks a variable so that no statement in the program is able to change it"],"a":0,"ex":"Watchers let you see your variables change values. The other two day-specific skills were slowing down with the speed slider and using console.log."},{"type":"mc","cat":"dev","q":"Which of the following BEST describes how a conditional statement changes the flow of a program?","c":["It breaks the normal top-to-bottom order by running some statements and skipping others based on a Boolean expression","It makes every statement inside it run twice, once when the condition is true and once when it is false","It makes the whole program pause and wait until the user clicks a button before continuing to the next line","It runs every branch one after another and keeps only the result from whichever branch ran last"],"a":0,"ex":"Conditional statements affect the sequential flow of control by executing different statements based on a Boolean expression."},{"type":"mc","cat":"dev","q":"Which of the following is TRUE about using operators with strings?","c":["Only + makes sense with strings, and it concatenates them; -, *, and / do not","All four operators +, -, *, and / work with strings, joining or splitting the text","Strings cannot be used with any operator at all, including the + operator","The + operator adds together the number of letters in each of the two strings"],"a":0,"ex":"From the Lesson 1 sticky activity: if you are using one or two strings, you can only use the + operator."},{"type":"mc","cat":"dev","q":"What is the difference between \"123\" and 123 in a program?","c":["\"123\" is a string of characters; 123 is a number that can be used in arithmetic","They are identical in every way, because the quotation marks are ignored when the program runs","\"123\" is a number that can be used in arithmetic; 123 is a string of characters","123 can only be displayed on screen, while \"123\" is the only form that can be used in math"],"a":0,"ex":"Quotes make a string. \"123\" + 1 is \"1231\"; 123 + 1 is 124."},{"type":"mc","cat":"dev","q":"In a flowchart, what does a diamond shape represent?","c":["A decision based on a Boolean expression, with true and false arrows leaving it","A statement that always runs, no matter what the values of the variables are","The starting point of the program, where the first statement is executed","A variable, with its name written inside and its current value next to it"],"a":0,"ex":"Rectangles are statements; diamonds are decisions. Flow goes top-to-bottom or left-to-right following the arrows."},{"type":"tf","cat":"code","q":"After the code x ← 3, y ← x, x ← 8 runs, y holds 8.","a":false,"ex":"y got a copy of 3. Variables are not connected."},{"type":"tf","cat":"code","q":"In JavaScript, \"7\" + 3 evaluates to 10.","a":false,"ex":"A string on either side makes + concatenate: \"73\"."},{"type":"tf","cat":"code","q":"15 % 4 evaluates to 3.","a":true,"ex":"4 goes into 15 three times (12), remainder 3."},{"type":"tf","cat":"code","q":"true && false evaluates to true.","a":false,"ex":"AND needs both sides true."},{"type":"tf","cat":"code","q":"false || true evaluates to true.","a":true,"ex":"OR needs only one side true."},{"type":"tf","cat":"code","q":"In an if-else-if chain, more than one branch can run if more than one condition is true.","a":false,"ex":"Only the first true branch runs; the rest are skipped."},{"type":"tf","cat":"dev","q":"Declaring a function automatically runs the code inside it.","a":false,"ex":"The code runs only when the function is called."},{"type":"tf","cat":"vocab","q":"A Boolean expression always evaluates to either true or false.","a":true,"ex":"Vocab definition of Boolean expression."},{"type":"tf","cat":"dev","q":"A variable can hold more than one value at the same time.","a":false,"ex":"A variable holds one value at a time; assigning a new one deletes the old one."},{"type":"tf","cat":"dev","q":"Using var inside an onEvent creates a local variable that is deleted when the onEvent finishes running.","a":true,"ex":"From the Lesson 3 global vs. local slide."}];
+
+// ===== LEARN MODULES (Unit 4) =====
+const LEARN = [
+  {
+    title: 'Values, Expressions, and Operators',
+    src: 'Lesson 1 slides (sticky notes activity) + Lesson 4 warm-up',
+    points: [
+      'Two types of values so far: STRINGS (any characters, inside double quotes: "hi", "123") and NUMBERS (digits, no quotes: 123). A third type comes in Lesson 5: BOOLEANS (true / false).',
+      '"123" and 123 are different. "123" + 1 is "1231"; 123 + 1 is 124.',
+      'ARITHMETIC OPERATORS: + - * / and % (modulus). On the AP exam modulus is written MOD.',
+      'MODULUS gives the REMAINDER: 17 % 5 = 2, 20 % 5 = 0, 4 % 7 = 4. x % 2 == 0 means x is even; x % 5 == 0 means x is a multiple of 5.',
+      'An EXPRESSION is a combination of operators and values that EVALUATES to a single value.',
+      'Order of operations: parentheses, then * / % (left to right), then + - (left to right).',
+      'CONCATENATION: + with a string on either side joins them end-to-end. "for" + "ever" = "forever", "gr" + 8 = "gr8", 5 + "5" = "55". Only + works with strings.',
+      'Left to right matters: 2 + 3 + "5" = "55" (adds first), but "5" + 2 + 3 = "523" (concatenates the whole way).'
+    ],
+    example: '3 + 4 * 2        -> 11\n(3 + 4) * 2      -> 14\n17 % 5           -> 2\n"tree" + "house" -> "treehouse"\n"you" + "r"      -> "your"\n3 + "D"          -> "3D"',
+    practice: [
+      {type:'mc', q:'What is 23 % 6?', c:['5','3','3.8','17'], a:0, ex:'6 x 3 = 18, remainder 5.'},
+      {type:'mc', q:'What does "gr" + 8 evaluate to?', c:['"gr8"','gr + 8','Error','"gr 8"'], a:0, ex:'A string on one side makes + concatenate.'},
+      {type:'mc', q:'Which condition checks if n is even?', c:['n % 2 == 0','n / 2 == 0','n % 2 == 1','n - 2 == 0'], a:0, ex:'Even numbers have no remainder when divided by 2.'},
+      {type:'tf', q:'"7" + 3 evaluates to 10.', a:false, ex:'It is "73".'}
+    ]
+  },
+  {
+    title: 'Variables and Assignment',
+    src: 'Lessons 1-2 slides + Lesson 1 and 2 CFUs',
+    points: [
+      'A VARIABLE is a named reference to a value that can be used repeatedly. Think: a baggie that holds ONE sticky note.',
+      'Create (declare) with var: var score = 0; declares the variable AND gives it an initial value.',
+      'ASSIGNMENT OPERATOR: = in JavaScript, ← on the AP exam. "score gets 5." It means "put this value in this variable," NOT "equal forever" like math.',
+      'EVALUATE FIRST, THEN ASSIGN. In score ← score + 1, compute score + 1 with the current value, then store the result.',
+      'A variable holds one value at a time. Assigning a new value deletes the old one forever.',
+      'Variables are NOT connected. After b ← a, changing a does not change b. To swap two variables you need a temporary variable.',
+      'Names: must start with a letter, no spaces, no quotes. Use meaningful names (score, not x1).',
+      'Counter pattern: var count = 0; onEvent("btn", "click", function() { count = count + 1; });',
+      'getText("inputId") gets what the user typed as a STRING. Math.round(x) rounds to the nearest whole number.'
+    ],
+    example: 'kit ← 1\nboo ← kit + 1     // boo is 2\nkit ← 5           // boo is STILL 2\n\nvar count = 0;\nonEvent("upButton", "click", function() {\n  count = count + 1;\n});',
+    practice: [
+      {type:'mc', q:'a ← 1, b ← a, a ← 2. What is b?', c:['1','2','a','3'], a:0, ex:'b got a copy of 1.'},
+      {type:'mc', q:'score ← 3, score ← score + 1, score ← "The score is: " + score. What is score?', c:['"The score is: 4"','"The score is: score"','4','"The score is: 3"'], a:0, ex:'Evaluate, then assign, step by step.'},
+      {type:'mc', q:'Which is NOT a valid variable name?', c:['2ndValue','userAge','total','score2'], a:0, ex:'Names must start with a letter.'},
+      {type:'tf', q:'t ← 0 then t ← 60. t now holds both 0 and 60.', a:false, ex:'Only the most recent value, 60.'}
+    ]
+  },
+  {
+    title: 'Global vs. Local Variables (Scope)',
+    src: 'Lesson 3 slides + Lesson 5 warm-up Q7 + Lesson 10 Level 7',
+    points: [
+      'GLOBAL variable: created with var OUTSIDE any onEvent or function. Permanent, usable anywhere.',
+      'LOCAL variable: created with var INSIDE an onEvent or function. Temporary, only usable there, deleted when it finishes.',
+      'Bug to watch for: using var again inside a handler creates a SECOND variable with the same name. Changing it does nothing to the global one.',
+      'Rule for now: use var only ONCE, at the TOP of the program, OUTSIDE any function or onEvent.'
+    ],
+    example: 'var x = 10;                       // global\nonEvent("button1", "click", function() {\n  var x = 5;                      // a DIFFERENT, local x\n  console.log(x);                 // 5 (on click)\n});\nconsole.log(x);                   // 10 (at startup, prints first)',
+    practice: [
+      {type:'mc', q:'var score = 0; a handler runs var score = 5; Then another handler prints score. What prints?', c:['0','5','undefined','Error'], a:0, ex:'The local score is gone; the global stayed 0.'},
+      {type:'mc', q:'Where should you create your variables?', c:['Once, at the top, outside onEvents and functions','Inside every onEvent that uses them','At the bottom of the program','Wherever you first change them'], a:0, ex:'From the Lesson 3 slide.'}
+    ]
+  },
+  {
+    title: 'Booleans, Comparison and Logical Operators, Truth Tables',
+    src: 'Lesson 5 slides + Lesson 5 CFU + Lesson 6 Code Studio',
+    points: [
+      'BOOLEAN VALUE: a data type that is either true or false.',
+      'BOOLEAN EXPRESSION: evaluates to true or false (like x > 5).',
+      'COMPARISON (RELATIONAL) OPERATORS: <  >  <=  >=  ==  !=  (AP exam uses =  ≠  ≤  ≥). A comparison operator is a clue to STOP and evaluate a Boolean.',
+      '= assigns; == compares. answer == "yes" checks; answer = "yes" stores.',
+      'Each side of a comparison is reduced to a single value first: 3 + 6 < 8 becomes 9 < 8, which is false.',
+      'LOGICAL OPERATORS: && (AND), || (OR), ! (NOT). On the AP exam: AND, OR, NOT.',
+      'AND: true only if BOTH sides are true. OR: true if EITHER side is true (false only when both are false). NOT: flips the value.',
+      'TRUTH TABLE: a breakdown of all possible truth values a logical expression can return.',
+      'Inclusive ranges use >= and <=: age >= 13 && age <= 19. Opposite of x > 5 is x <= 5.'
+    ],
+    example: 'A     B     A && B   A || B   !A\ntrue  true  true     true     false\ntrue  false false    true     false\nfalse true  false    true     true\nfalse false false    false    true\n\nx = 2:  (x < 5 && x > 2) -> (true && false) -> false\nx = 3:  (x > 5 || x > 2) -> (false || true) -> true',
+    practice: [
+      {type:'mc', q:'x = 7. (x > 5) && (x < 7)?', c:['false','true','7','Error'], a:0, ex:'7 < 7 is false.'},
+      {type:'mc', q:'What does ( 3 + 1 < 5 - 4 && 3 + 1 < 5 ) evaluate to?', c:['false','true','4','1'], a:0, ex:'4 < 1 is false, so AND is false.'},
+      {type:'mc', q:'Which is the same as !(x > 5)?', c:['x <= 5','x < 5','x >= 5','x == 5'], a:0, ex:'"Not greater than" means "less than or equal."'},
+      {type:'ms', q:'Which are logical operators? Choose all.', c:['&&','||','!','!='], a:[0,1,2], ex:'!= is a comparison operator.'}
+    ]
+  },
+  {
+    title: 'Conditionals: if, else, else-if, Flowcharts',
+    src: 'Lesson 5 slides, Lesson 6 Code Studio, Lesson 7 AP pseudocode levels, Lesson 9 warm-up',
+    points: [
+      'CONDITIONAL STATEMENT: changes the sequential flow by running different statements based on a Boolean expression. SELECTION is the general idea.',
+      'if: runs its code only when the condition is true. An if does NOT need an else.',
+      'if-else: exactly ONE of the two branches runs.',
+      'if-else-if chain: checks conditions top to bottom and runs ONLY THE FIRST TRUE ONE, then skips the rest. With a final else, exactly one branch runs.',
+      'Put the MOST SPECIFIC condition first (score > 15 before score > 10 before score > 5). Otherwise the broad condition catches everything.',
+      'Two separate if statements are checked independently, so both can run. That is different from else if.',
+      'Nested if: an if inside another if. The inner one is only checked if the outer one was true.',
+      'FLOWCHART: rectangles = statements, diamonds = decisions (with true / false arrows). Follow the arrows top to bottom.',
+      'Common game check: after lives = lives - 1, use if (lives <= 0) { setScreen("gameOverScreen"); } INSIDE the handler.'
+    ],
+    example: 'if (score > 15) {          // most specific first\n  setProperty("lemon", "width", 30);\n} else if (score > 10) {\n  setProperty("lemon", "width", 60);\n} else if (score > 5) {\n  setProperty("lemon", "width", 100);\n} else {\n  setProperty("lemon", "width", 140);\n}',
+    practice: [
+      {type:'mc', q:'score = 18: if (score > 5) "small" else if (score > 10) "smaller" else if (score > 15) "smallest". What prints?', c:['small','smallest','all three','smaller'], a:0, ex:'First true wins. That is why order matters.'},
+      {type:'mc', q:'x = 12: two separate ifs, if (x > 10) print A; if (x > 5) print B. What prints?', c:['A then B','A only','B only','Nothing'], a:0, ex:'Separate ifs are both checked.'},
+      {type:'mc', q:'IF (number ≥ 10) { IF (number ≤ 20) MEDIUM ELSE HOT } ELSE COLD. Input 20?', c:['MEDIUM','HOT','COLD','Nothing'], a:0, ex:'20 ≥ 10 and 20 ≤ 20.'},
+      {type:'mc', q:'In a flowchart, a decision is drawn as a:', c:['Diamond','Rectangle','Circle','Arrow'], a:0, ex:'Diamonds are decisions.'}
+    ]
+  },
+  {
+    title: 'Functions (Procedures)',
+    src: 'Lesson 9 slides + Lesson 10 Code Studio + Lesson 9 and 10 CFUs',
+    points: [
+      'FUNCTION: a named group of programming instructions. Also called a PROCEDURE (AP: may have parameters and return values).',
+      'Two steps: DEFINE (declare) it, then CALL it. Defining does NOT run it. FUNCTION CALL: a command that executes the code within a function.',
+      'Syntax: function updateScreen() { ... }  Call: updateScreen();',
+      'The output order follows the order of the CALLS, not the order the functions were declared. A function can be called many times; each call runs the whole body again.',
+      'A function can call another function. In App Lab you can declare functions at the BOTTOM and call them above.',
+      'Function names follow variable rules: start with a letter, no spaces, spelled EXACTLY the same in the declaration and every call (buyApple is not buyapple).',
+      'Benefits: removes repeated code, keeps code organized, easier to maintain (change it in one place).',
+      'updateScreen() pattern: one function updates all the screen elements from the variables; call it at startup and after every change.',
+      'A function changes a GLOBAL variable if it does not use var inside. Using var inside makes a local copy.',
+      'AP pseudocode: PROCEDURE checkDay() { ... } and call it with checkDay().'
+    ],
+    example: 'var count = 0;\nupdateScreen();                       // call at startup\nonEvent("upButton", "click", function() {\n  count = count + 1;\n  updateScreen();                     // call after every change\n});\nfunction updateScreen() {             // declare once, at the bottom\n  setText("countLabel", count);\n  if (count > 20) {\n    setProperty("countLabel", "text-color", "green");\n  }\n}',
+    practice: [
+      {type:'mc', q:'A function is declared but never called. What does its code do?', c:['Nothing; it never runs','Runs once at startup','Runs when any button is clicked','Causes an error'], a:0, ex:'Declaring is not calling.'},
+      {type:'mc', q:'b(); a(); b(); where a prints 1 and b prints 2. Output?', c:['2 1 2','1 2','1 2 1','2 1'], a:0, ex:'Calls set the order.'},
+      {type:'mc', q:'Which defines a function correctly?', c:['function myFunc() { }','function myFunc { }','func myFunc() { }','myFunc() = function { }'], a:0, ex:'function, name, (), braces.'},
+      {type:'mc', q:'Benefits of functions: I. remove repeated code II. organized III. easier to maintain', c:['I, II, and III','I only','I and II only','II and III only'], a:0, ex:'All three.'}
+    ]
+  },
+  {
+    title: 'AP Exam Pseudocode (Reference Sheet)',
+    src: 'Lesson 3, 7, and 10 AP pseudocode levels',
+    points: [
+      'Assignment: a ← expression',
+      'Output: DISPLAY(expression) shows the value followed by a space. Multiple DISPLAYs appear on one line, in the order they run.',
+      'Random: RANDOM(a, b) gives a whole number from a to b, inclusive. It runs once each time that line runs; a variable keeps the value it got.',
+      'Input: INPUT() gets a value from the user.',
+      'Math: + - * / and a MOD b (remainder).',
+      'Comparisons: =  ≠  <  ≤  >  ≥  (on the AP exam, = in a condition means "is equal to").',
+      'Logic: NOT, AND, OR.',
+      'Selection: IF (condition) { ... } ELSE { ... }',
+      'Procedures: PROCEDURE name() { ... } and call with name().'
+    ],
+    example: 'a ← RANDOM(1, 10)\nb ← RANDOM(10, 20)\nDISPLAY(a)\nDISPLAY(a)     // same as the line above\nDISPLAY(b)\nDISPLAY(b)\n\nPossible: 10 10 10 10    Impossible: 10 5 10 5',
+    practice: [
+      {type:'mc', q:'a ← RANDOM(1, 6), b ← a + 1. Which output is impossible for DISPLAY(a) DISPLAY(b)?', c:['4 4','1 2','6 7','3 4'], a:0, ex:'b is always a + 1.'},
+      {type:'mc', q:'What is 14 MOD 4?', c:['2','3','3.5','10'], a:0, ex:'4 x 3 = 12, remainder 2.'}
+    ]
+  }
+];
+
+// stable id per question (hash of its text) so adding questions later does not break saved lists
+function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return 'q' + (h >>> 0).toString(36); }
+BANK.forEach(q => {
+  q.id = hashStr(q.type + '|' + q.q + '|' + (q.code || ''));
+});
+const BY_ID = Object.fromEntries(BANK.map(q => [q.id, q]));
+function getDiff() { return 0; }
+function updateDiff() {}
+
+// seen tracking
+function loadSeen() { try { return JSON.parse(localStorage.getItem('csp_u4_seen') || '[]'); } catch (e) { return window._seenMem || []; } }
+function saveSeen(arr) { try { localStorage.setItem('csp_u4_seen', JSON.stringify(arr)); } catch (e) { window._seenMem = arr; } updateSeenUI(); }
+function resetSeen() { if (confirm('Forget which questions you have already seen?')) saveSeen([]); }
+function updateSeenUI() {
+  const seen = loadSeen().filter(id => BY_ID[id]).length;
+  document.getElementById('seenText').textContent = `${seen} of ${BANK.length} questions seen`;
+  document.getElementById('seenBar').style.width = `${Math.round(seen / BANK.length * 100)}%`;
+}
+
+// ===== STATE =====
+let test = [], idx = 0, answers = [], timerId = null, timeLeft = 0, current = null, testMode = 'normal', startSecs = 0;
+let vocabOrder = VOCAB.map((_, i) => i), vocabMode = 'list', hideDefs = false, flashIdx = 0, flashBack = false, vq = null;
+
+document.getElementById('bankCount').textContent = BANK.length;
+
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function fmtChoice(c) { return c.includes('\n') ? '<code style="white-space:pre-wrap;font-family:Consolas,Menlo,monospace;font-size:13.5px;display:block">' + esc(c) + '</code>' : esc(c); }
+
+// ===== MISSED STORAGE =====
+function loadMissed() { try { return JSON.parse(localStorage.getItem('csp_u4_missed') || '[]'); } catch (e) { return window._missedMem || []; } }
+function saveMissed(arr) { try { localStorage.setItem('csp_u4_missed', JSON.stringify(arr)); } catch (e) { window._missedMem = arr; } updateMissedPill(); }
+function updateMissedPill() {
+  const n = loadMissed().length; const pill = document.getElementById('missedPill');
+  pill.textContent = n; pill.classList.toggle('hidden', n === 0);
+}
+function clearMissed() { if (confirm('Clear your missed questions list?')) { saveMissed([]); renderMissed(); } }
+
+// ===== TABS =====
+function showTab(name) {
+  document.querySelectorAll('.tabpane').forEach(el => el.classList.add('hidden'));
+  document.getElementById(name).classList.remove('hidden');
+  document.querySelectorAll('#nav button').forEach((b, i) => b.classList.toggle('active', ['start','learn','vocab','missed'][i] === name));
+  if (name === 'vocab') renderVocab();
+  if (name === 'missed') renderMissed();
+  if (name === 'learn') renderLearn();
+}
+
+// ===== TEST BUILDING =====
+function prepQ(q) {
+  if (q.type === 'tf') return { ...q, c: ['True', 'False'], correct: q.a ? [0] : [1], pts: 1 };
+  const order = shuffle(q.c.map((_, i) => i));
+  const c = order.map(i => q.c[i]);
+  const correctOrig = q.type === 'ms' ? q.a : [q.a];
+  const correct = correctOrig.map(ci => order.indexOf(ci)).sort((x, y) => x - y);
+  return { ...q, c, correct, pts: q.type === 'ms' ? 2 : 1 };
+}
+
+function buildTest(n) {
+  // Category mix like the real quiz: ~50% code reading, ~25% vocab, ~25% development process. TF capped at ~10%.
+  const seen = new Set(loadSeen());
+  const rank = q => (seen.has(q.id) ? 1 : 0);
+  const pool = c => shuffle(BANK.filter(q => q.cat === c)).sort((a, b) => rank(a) - rank(b));
+  const nCode = Math.round(n * 0.6), nVocab = Math.round(n * 0.2), nDev = n - nCode - nVocab;
+  const maxTf = Math.max(1, Math.round(n * 0.10));
+  let tfUsed = 0;
+  const take = (c, k) => { const p = pool(c); const out = []; for (const q of p) { if (out.length >= k) break; if (q.type === 'tf') { if (tfUsed >= maxTf) continue; tfUsed++; } out.push(q); } return out; };
+  let picked = [...take('code', nCode), ...take('vocab', nVocab), ...take('dev', nDev)];
+  if (picked.length < n) { const rest = shuffle(BANK.filter(q => !picked.includes(q) && q.type !== 'tf')).sort((a, b) => rank(a) - rank(b)); picked = picked.concat(rest.slice(0, n - picked.length)); }
+  return shuffle(picked).map(prepQ);
+}
+
+function startTest() {
+  const n = Math.min(80, Math.max(5, parseInt(document.getElementById('numQ').value) || 16));
+  const mins = Math.max(1, parseInt(document.getElementById('numMin').value) || 20);
+  testMode = 'normal';
+  launch(buildTest(n), mins * 60, '');
+}
+
+function startMissedTest() {
+  const ids = loadMissed();
+  if (ids.length === 0) { alert('No missed questions yet. Nice.'); return; }
+  const qs = shuffle(ids.map(id => BY_ID[id]).filter(Boolean)).map(prepQ);
+  testMode = 'missed';
+  launch(qs, Math.max(60, Math.ceil(qs.length * 75)), 'Retake: missed questions');
+}
+
+function launch(qs, secs, label) {
+  test = qs; answers = new Array(test.length).fill(null); idx = 0; timeLeft = secs; startSecs = secs;
+  document.getElementById('nav').classList.add('hidden');
+  document.querySelectorAll('.tabpane').forEach(el => el.classList.add('hidden'));
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('test').classList.remove('hidden');
+  document.getElementById('modeLabel').textContent = label;
+  renderTimer();
+  clearInterval(timerId);
+  timerId = setInterval(() => { timeLeft--; renderTimer(); if (timeLeft <= 0) { clearInterval(timerId); finish(true); } }, 1000);
+  renderQ();
+  window.onbeforeunload = () => 'Your test is in progress.';
+  window.scrollTo(0, 0);
+}
+
+function renderTimer() {
+  const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+  const el = document.getElementById('timer');
+  el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  el.classList.toggle('warn', timeLeft <= 120);
+}
+
+function renderQ() {
+  const q = test[idx];
+  current = q.type === 'ms' ? [] : null;
+  document.getElementById('qnum').textContent = `Question ${idx + 1} of ${test.length}`;
+  document.getElementById('qpts').textContent = `(${q.pts} pt${q.pts > 1 ? 's' : ''})`;
+  document.getElementById('bar').style.width = `${(idx / test.length) * 100}%`;
+  const typeLabel = q.type === 'tf' ? 'True / False' : q.type === 'ms' ? 'Multi-select: choose all that apply' : 'Multiple choice';
+  const catLabel = q.cat === 'code' ? 'Code reading' : q.cat === 'dev' ? 'Concept' : 'Vocabulary';
+  let html = `<div class="qtype">${typeLabel}</div><span class="qtype" style="background:#f3f4f6;color:#374151;margin-left:6px">${catLabel}</span><div class="qtext">${esc(q.q)}</div>`;
+  if (q.code) html += `<pre class="code">${esc(q.code)}</pre>`;
+  html += '<div class="choices">';
+  q.c.forEach((c, i) => { html += `<label class="choice" id="ch${i}"><input type="${q.type === 'ms' ? 'checkbox' : 'radio'}" name="ans" onchange="pick(${i}, this)"><span>${fmtChoice(c)}</span></label>`; });
+  html += '</div>';
+  document.getElementById('qbody').innerHTML = html;
+  document.getElementById('lockBtn').disabled = true;
+  document.getElementById('lockBtn').textContent = idx === test.length - 1 ? 'Lock In & Submit Test' : 'Lock In Answer';
+  window.scrollTo(0, 0);
+}
+
+function pick(i, input) {
+  const q = test[idx];
+  if (q.type === 'ms') {
+    if (input.checked) { if (!current.includes(i)) current.push(i); } else { current = current.filter(x => x !== i); }
+    document.getElementById(`ch${i}`).classList.toggle('selected', input.checked);
+    document.getElementById('lockBtn').disabled = current.length === 0;
+  } else {
+    current = i;
+    q.c.forEach((_, j) => document.getElementById(`ch${j}`).classList.toggle('selected', j === i));
+    document.getElementById('lockBtn').disabled = false;
+  }
+}
+
+function lockIn() {
+  const q = test[idx];
+  answers[idx] = q.type === 'ms' ? current.slice().sort((a, b) => a - b) : [current];
+  idx++;
+  if (idx >= test.length) finish(false); else renderQ();
+}
+
+function reviewBlock(q, yours, i) {
+  const isSkip = yours === null || yours === undefined;
+  const isRight = !isSkip && yours.length === q.correct.length && yours.every((v, k) => v === q.correct[k]);
+  const cls = isSkip ? 'skipped' : isRight ? 'correct' : 'wrong';
+  const tag = isSkip ? '<span class="tag skip">Not answered (time ran out)</span>' : isRight ? `<span class="tag ok">Correct (${q.pts}/${q.pts})</span>` : `<span class="tag bad">Incorrect (0/${q.pts})</span>`;
+  let h = `<div class="review-q ${cls}">${tag}<div><b>Q${i + 1}.</b> ${esc(q.q)}</div>`;
+  if (q.code) h += `<pre class="code">${esc(q.code)}</pre>`;
+  h += '<ul class="ans-list">';
+  q.c.forEach((c, k) => {
+    const corr = q.correct.includes(k), picked = !isSkip && yours.includes(k);
+    let li = '', mark = '';
+    if (corr && picked) { li = 'right'; mark = 'Correct, you chose this'; }
+    else if (corr && !picked) { li = 'missed'; mark = 'Correct answer (you missed it)'; }
+    else if (!corr && picked) { li = 'yours-wrong'; mark = 'You chose this (wrong)'; }
+    h += `<li class="${li}">${fmtChoice(c)}${mark ? ` <span class="muted">- ${mark}</span>` : ''}</li>`;
+  });
+  h += `</ul><div class="explain"><b>Explanation:</b> ${esc(q.ex)}</div></div>`;
+  return { h, isRight, isSkip };
+}
+
+function finish(timedOut) {
+  clearInterval(timerId);
+  window.onbeforeunload = null;
+  document.getElementById('test').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('nav').classList.remove('hidden');
+  let earned = 0, total = 0, nCorrect = 0, nWrong = 0, nSkip = 0, review = '', missedReview = '';
+  let missed = loadMissed();
+  const seenArr = loadSeen();
+  test.forEach(q => { if (!seenArr.includes(q.id)) seenArr.push(q.id); });
+  saveSeen(seenArr);
+  test.forEach((q, i) => {
+    total += q.pts;
+    const r = reviewBlock(q, answers[i], i);
+    if (r.isRight) { earned += q.pts; nCorrect++; missed = missed.filter(id => id !== q.id); }
+    else { if (r.isSkip) nSkip++; else nWrong++; if (!missed.includes(q.id)) missed.push(q.id); missedReview += r.h; }
+    review += r.h;
+  });
+  saveMissed(missed);
+  const pct = Math.round((earned / total) * 100);
+  document.getElementById('scoreLine').textContent = `${earned} / ${total} points (${pct}%)`;
+  const used = startSecs - Math.max(0, timeLeft);
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><b>${nCorrect}</b><span>correct</span></div>
+    <div class="stat"><b>${nWrong}</b><span>incorrect</span></div>
+    <div class="stat"><b>${nSkip}</b><span>unanswered</span></div>
+    <div class="stat"><b>${Math.floor(used / 60)}:${(used % 60).toString().padStart(2, '0')}</b><span>time used${timedOut ? ' (timed out)' : ''}</span></div>
+    <div class="stat"><b>${missed.length}</b><span>in missed list</span></div>`;
+  document.getElementById('retakeMissedNow').classList.toggle('hidden', missed.length === 0);
+  const wrongCount = nWrong + nSkip;
+  document.getElementById('review').innerHTML =
+    (wrongCount ? `<h2>What you missed this attempt (${wrongCount})</h2>${missedReview}` : '<h2>You got everything right this attempt.</h2>') +
+    `<div id="fullReview" class="hidden"><h2>Full review (all ${test.length} questions)</h2>${review}</div>
+     <button class="secondary small" onclick="document.getElementById('fullReview').classList.toggle('hidden')">Show / Hide correct ones too</button>`;
+  window.scrollTo(0, 0);
+}
+
+// ===== MISSED TAB =====
+let missedShowAnswers = false;
+function toggleMissedReview() { missedShowAnswers = !missedShowAnswers; renderMissed(); }
+function renderMissed() {
+  const ids = loadMissed();
+  const body = document.getElementById('missedBody');
+  document.getElementById('retakeBtn').disabled = ids.length === 0;
+  if (ids.length === 0) { body.innerHTML = '<p class="muted">Nothing here yet. Take a test and anything you miss shows up in this list.</p>'; return; }
+  let h = `<p><b>${ids.length}</b> question${ids.length > 1 ? 's' : ''} to review.</p>`;
+  ids.forEach((id, i) => {
+    const q = BY_ID[id]; if (!q) return;
+    const p = prepQ(q);
+    h += `<div class="review-q wrong"><div><span class="qtype">${q.type === 'tf' ? 'True / False' : q.type === 'ms' ? 'Multi-select' : 'Multiple choice'}</span></div><div><b>${i + 1}.</b> ${esc(q.q)}</div>`;
+    if (q.code) h += `<pre class="code">${esc(q.code)}</pre>`;
+    if (missedShowAnswers) {
+      h += '<ul class="ans-list">';
+      p.c.forEach((c, k) => { h += `<li class="${p.correct.includes(k) ? 'right' : ''}">${fmtChoice(c)}${p.correct.includes(k) ? ' <span class="muted">- correct</span>' : ''}</li>`; });
+      h += `</ul><div class="explain"><b>Explanation:</b> ${esc(q.ex)}</div>`;
+    } else {
+      h += '<ul class="ans-list">' + p.c.map(c => `<li>${fmtChoice(c)}</li>`).join('') + '</ul><p class="muted">Answers hidden. Click "Show / Hide Answers" above, or retake these as a test.</p>';
+    }
+    h += '</div>';
+  });
+  body.innerHTML = h;
+}
+
+// ===== VOCAB TAB =====
+function shuffleVocab() { vocabOrder = shuffle(vocabOrder); flashIdx = 0; flashBack = false; renderVocab(); }
+function resetVocabOrder() { vocabOrder = VOCAB.map((_, i) => i); flashIdx = 0; flashBack = false; renderVocab(); }
+function renderVocab() {
+  const body = document.getElementById('vocabBody');
+  document.getElementById('hideDefBtn').textContent = hideDefs ? 'Show Definitions' : 'Hide Definitions';
+  if (vocabMode === 'list') {
+    body.innerHTML = `<p class="muted">${VOCAB.length} terms${hideDefs ? '. Definitions hidden: click one to reveal it.' : ''}</p>` + vocabOrder.map(i => {
+      const v = VOCAB[i];
+      return `<div class="vocab-item ${hideDefs ? 'hide-def' : ''}"><b>${esc(v.t)}</b><div class="def" onclick="this.classList.toggle('shown')">${esc(v.d)}</div><div class="src">${esc(v.s)}</div></div>`;
+    }).join('');
+  } else if (vocabMode === 'flash') {
+    const v = VOCAB[vocabOrder[flashIdx]];
+    body.innerHTML = `
+      <p class="muted">Card ${flashIdx + 1} of ${VOCAB.length}. Click the card to flip.</p>
+      <div class="flash ${flashBack ? 'back' : ''}" onclick="flashBack=!flashBack; renderVocab()">
+        <div>${flashBack ? esc(v.d) : '<b>' + esc(v.t) + '</b>'}<span class="hint">${flashBack ? 'definition' : 'term (click to flip)'}</span></div>
+      </div>
+      <div class="btnrow" style="justify-content:space-between">
+        <button class="secondary" onclick="flashIdx=(flashIdx-1+VOCAB.length)%VOCAB.length; flashBack=false; renderVocab()">Previous</button>
+        <button class="primary" onclick="flashIdx=(flashIdx+1)%VOCAB.length; flashBack=false; renderVocab()">Next</button>
+      </div>`;
+  } else if (vocabMode === 'quiz') {
+    renderVocabQuiz();
+  }
+}
+
+function startVocabQuiz() {
+  const order = shuffle(VOCAB.map((_, i) => i));
+  vq = { order, i: 0, score: 0, answered: null, done: false };
+  renderVocabQuiz();
+}
+function renderVocabQuiz() {
+  const body = document.getElementById('vocabBody');
+  if (!vq) { startVocabQuiz(); return; }
+  if (vq.done) {
+    body.innerHTML = `<h2>Vocab quiz: ${vq.score} / ${VOCAB.length}</h2><button class="primary" onclick="startVocabQuiz()">Try Again (reshuffled)</button>`;
+    return;
+  }
+  const ti = vq.order[vq.i];
+  const v = VOCAB[ti];
+  if (!vq.opts) {
+    const others = shuffle(VOCAB.map((_, k) => k).filter(k => k !== ti)).slice(0, 3);
+    vq.opts = shuffle([ti, ...others]);
+  }
+  let h = `<p class="muted">Question ${vq.i + 1} of ${VOCAB.length}. Which term matches this definition?</p><div class="qtext" style="font-size:16px">${esc(v.d)}</div><div class="choices">`;
+  vq.opts.forEach(k => {
+    let cls = '';
+    if (vq.answered !== null) { if (k === ti) cls = 'style="border-color:#16a34a;background:#dcfce7"'; else if (k === vq.answered) cls = 'style="border-color:#dc2626;background:#fee2e2"'; }
+    h += `<div class="choice" ${cls} onclick="vocabAnswer(${k})"><span><b>${esc(VOCAB[k].t)}</b></span></div>`;
+  });
+  h += '</div>';
+  if (vq.answered !== null) h += `<div class="btnrow" style="margin-top:14px"><button class="primary" onclick="vocabNext()">${vq.i === VOCAB.length - 1 ? 'See Score' : 'Next'}</button></div>`;
+  body.innerHTML = h;
+}
+function vocabAnswer(k) { if (vq.answered !== null) return; vq.answered = k; if (k === vq.order[vq.i]) vq.score++; renderVocabQuiz(); }
+function vocabNext() { vq.i++; vq.answered = null; vq.opts = null; if (vq.i >= VOCAB.length) vq.done = true; renderVocabQuiz(); }
+
+// ===== LEARN TAB =====
+let learnOpen = {};
+let learnAns = {};
+function openAllLearn(open) { LEARN.forEach((_, i) => learnOpen[i] = open); renderLearn(); }
+function renderLearn() {
+  const body = document.getElementById('learnBody');
+  body.innerHTML = LEARN.map((m, mi) => {
+    const open = !!learnOpen[mi];
+    let h = `<div class="learn-mod"><button class="hdr" onclick="learnOpen[${mi}]=!learnOpen[${mi}]; renderLearn()"><span><b>${mi + 1}. ${esc(m.title)}</b><br><span class="muted">${esc(m.src)}</span></span><span>${open ? '&#9650;' : '&#9660;'}</span></button>`;
+    if (open) {
+      h += `<div class="learn-body"><h3>Key ideas</h3><ul>${m.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>`;
+      if (m.example) h += `<h3>Example</h3><pre class="code">${esc(m.example)}</pre>`;
+      h += `<h3>Practice (instant feedback)</h3>`;
+      m.practice.forEach((p, pi) => {
+        const key = mi + '_' + pi;
+        const choices = p.type === 'tf' ? ['True', 'False'] : p.c;
+        const correct = p.type === 'tf' ? [p.a ? 0 : 1] : (p.type === 'ms' ? p.a : [p.a]);
+        const st = learnAns[key];
+        h += `<div class="pq"><div style="white-space:pre-wrap"><b>${pi + 1}.</b> ${esc(p.q)}${p.type === 'ms' ? ' <span class="muted">(choose all)</span>' : ''}</div><div class="choices" style="margin-top:8px">`;
+        choices.forEach((c, ci) => {
+          const picked = st && st.picked.includes(ci);
+          let style = '';
+          if (st && st.checked) { if (correct.includes(ci)) style = 'style="border-color:#16a34a;background:#dcfce7"'; else if (picked) style = 'style="border-color:#dc2626;background:#fee2e2"'; }
+          else if (picked) style = 'class="choice selected"';
+          h += `<label class="choice" ${style}><input type="${p.type === 'ms' ? 'checkbox' : 'radio'}" name="pq${key}" ${picked ? 'checked' : ''} ${st && st.checked ? 'disabled' : ''} onchange="learnPick('${key}', ${ci}, this, '${p.type}')"><span>${fmtChoice(c)}</span></label>`;
+        });
+        h += '</div>';
+        if (st && st.checked) {
+          const ok = st.picked.length === correct.length && st.picked.every(v => correct.includes(v));
+          h += `<div class="fb ${ok ? 'ok' : 'bad'}"><b>${ok ? 'Correct.' : 'Not quite.'}</b> ${esc(p.ex)}</div><button class="secondary small" style="margin-top:8px" onclick="delete learnAns['${key}']; renderLearn()">Try again</button>`;
+        } else {
+          h += `<button class="primary small" style="margin-top:8px" ${st && st.picked.length ? '' : 'disabled'} onclick="learnCheck('${key}')">Check</button>`;
+        }
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+    return h + '</div>';
+  }).join('');
+}
+function learnPick(key, ci, input, type) {
+  const st = learnAns[key] || (learnAns[key] = { picked: [], checked: false });
+  if (type === 'ms') { if (input.checked) { if (!st.picked.includes(ci)) st.picked.push(ci); } else st.picked = st.picked.filter(x => x !== ci); }
+  else st.picked = [ci];
+  renderLearn();
+}
+function learnCheck(key) { if (learnAns[key]) { learnAns[key].checked = true; renderLearn(); } }
+
+updateMissedPill();
+updateDiff();
+updateSeenUI();
+</script>
+</body>
+</html>
