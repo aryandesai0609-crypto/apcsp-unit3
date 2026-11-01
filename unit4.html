@@ -101,6 +101,7 @@
 <div class="nav" id="nav">
   <button class="active" onclick="showTab('start')">Practice Test</button>
   <button onclick="showTab('learn')">Learn</button>
+  <button onclick="showTab('mistakes')">Avoid Mistakes</button>
   <button onclick="showTab('vocab')">Vocabulary</button>
   <button onclick="showTab('missed')">Missed Questions <span id="missedPill" class="pill hidden"></span></button>
 </div>
@@ -138,6 +139,13 @@
   <p class="muted">Every Unit 4 concept from the lesson slides, Code Studio, and your CFUs, explained, with practice questions that are separate from the test bank. Practice gives instant feedback. Click a topic to open it.</p>
   <div class="btnrow"><button class="secondary small" onclick="openAllLearn(true)">Expand all</button><button class="secondary small" onclick="openAllLearn(false)">Collapse all</button></div>
   <div id="learnBody"></div>
+</div>
+
+<!-- MISTAKES SCREEN -->
+<div id="mistakes" class="card tabpane hidden">
+  <h1>Avoid Silly Mistakes</h1>
+  <p class="muted">The traps that cost the most points on Unit 4 questions, how to catch each one, and a drill for each. Your own pattern (from your Missed Questions) is at the top.</p>
+  <div id="mistakesBody"></div>
 </div>
 
 <!-- VOCAB SCREEN -->
@@ -447,6 +455,262 @@ const LEARN = [
   }
 ];
 
+
+// ===== AVOID MISTAKES =====
+const qAll = q => (q.q + '\n' + (q.code || '') + '\n' + (q.c || []).join('\n'));
+const qAllEx = q => qAll(q) + '\n' + (q.ex || '');
+const TRAPS = [
+  {
+    id: 'read', title: 'Answering a different question than the one asked',
+    mistake: 'You trace the code perfectly, then pick the value of the wrong variable, miss a NOT, or only pick one answer on a "Select two."',
+    catchIt: [
+      'Read the LAST sentence of the question first, before the code. Underline exactly what they want: which variable, "displayed" vs "stored," NOT / could NOT, Select two.',
+      'If the question says NOT, write a big "NOT" on your scratch paper. Three choices will be true statements; you want the false one.',
+      'On "Select two," expect two correct choices that look different (for example, an IF/ELSE version and a "set it first, then IF" version).'
+    ],
+    example: 'a ← 5\nb ← a + 1\na ← b * 2\n\n"What is the value of b?"   -> 6\nTrap answer: 12 (that is a)',
+    check: [{q:'a ← 5, then b ← a + 1, then a ← b * 2. What is the value of b?', c:['6','12','5','7'], a:0, ex:'b was set once to 6 and never changed. 12 is the value of a.'}],
+    match: q => /\bNOT\b|EXCEPT|Select two|Choose all|select all/.test(q.q)
+  },
+  {
+    id: 'concat', title: 'Strings sneaking into +',
+    mistake: 'You add numbers when one side is actually a string, or you forget that + works left to right.',
+    catchIt: [
+      'Before every +, check both sides for quotes. If either side is a string, + joins text instead of adding.',
+      'Work strictly left to right: 1 + 2 + "3" is "33" (adds first), but "1" + 2 + 3 is "123" (text the whole way).',
+      'getText() always gives a string, even if the user typed a number.',
+      '* and / still happen before +, even in a string expression: "1" + 2 * 3 is "16".'
+    ],
+    example: '1 + 2 + "3" + 4 + 5\n= 3 + "3" + 4 + 5\n= "33" + 4 + 5\n= "334" + 5\n= "3345"',
+    check: [{q:'What does console.log(1 + 2 + "3" + 4 + 5); print?', c:['3345','15','12345','339'], a:0, ex:'1 + 2 = 3 (numbers). Then 3 + "3" = "33" and it stays text: "334", then "3345".'}],
+    match: q => /concatenat|getText|"\s*\+\s*[\da-zA-Z(]|[\da-zA-Z)]\s*\+\s*"/.test(qAll(q))
+  },
+  {
+    id: 'edge', title: 'Off by one at the cutoff (> vs >=)',
+    mistake: 'You pick a condition that works for most values but is wrong at exactly the boundary number.',
+    catchIt: [
+      'Translate the words: "at least / or more / or above / inclusive" means >= or ≥. "Over / more than / greater than" means >. "Under / less than" means <.',
+      'Always test the EXACT cutoff value. 5 > 5 is false; 5 >= 5 is true.',
+      'For "between A and B inclusive," you need (x >= A) AND (x <= B).',
+      'For a code-choice question, test three values: one below the cutoff, the cutoff, one above.'
+    ],
+    example: '"Free shipping on orders of $50 or more"\n  total >= 50   correct\n  total > 50    wrong: a $50 order would pay shipping',
+    check: [{q:'"Free shipping on orders of $50 or more." Which condition is correct?', c:['total >= 50','total > 50','total == 50','total <= 50'], a:0, ex:'"Or more" includes 50 itself, so >=. total > 50 fails for exactly $50.'}],
+    match: q => /≥|≤|>=|<=|inclusive|at least|or more|or above|or older|between/i.test(qAll(q))
+  },
+  {
+    id: 'chain', title: 'IF chains vs. separate IFs',
+    mistake: 'In an if / else-if chain you run more than one branch, or with separate IFs you forget the second IF can overwrite the first.',
+    catchIt: [
+      'if / else if / else: go top to bottom, run ONLY the first true branch, then skip to the end. Exactly one branch runs when there is a final else.',
+      'Two separate if statements are checked independently. Both can run, and the later one can overwrite a variable the first one set.',
+      'If a broad condition (score >= 70) comes before a narrow one (score >= 90), the narrow one can never run. Most specific first.',
+      'Nested IF: the inner IF is only checked if the outer condition was true.'
+    ],
+    example: 'x ← 7\nIF (x > 5)  { msg ← "big" }\nIF (x > 8)  { msg ← "huge" }\nELSE        { msg ← "small" }\n\nmsg is "small", not "big": the second IF/ELSE runs too\nand its ELSE overwrites "big".',
+    check: [
+      {q:'x is 7.\nIF (x > 5) { msg ← "big" }\nIF (x > 8) { msg ← "huge" } ELSE { msg ← "small" }\nWhat is msg?', c:['"small"','"big"','"huge"','"big" and "small" are both stored'], a:0, ex:'Two separate IFs. The first sets "big", then 7 > 8 is false so the ELSE replaces it with "small".'},
+      {q:'score is 95.\nif (score >= 70) "C" else if (score >= 80) "B" else if (score >= 90) "A"\nWhich grade?', c:['C','A','B','A, B, and C'], a:0, ex:'95 >= 70 is true first, so the chain stops at C. The order is wrong for a grading program.'}
+    ],
+    match: q => /else if|ELSE\s*\{\s*IF|ELSE\s*\n\s*\{\s*\n\s*IF|if-else-if|else-if|\}\s*\n\s*IF\s*\(/i.test(qAllEx(q))
+  },
+  {
+    id: 'linked', title: 'Thinking variables are linked',
+    mistake: 'After b ← a, you change a and assume b changes too. Or you use a variable\'s OLD value after it was already overwritten.',
+    catchIt: [
+      'Keep a table with one column per variable. Cross out and rewrite on every assignment.',
+      'b ← a copies the value at that moment. Later changes to a do nothing to b.',
+      'Evaluate the right side with the CURRENT values, then store. Old values are gone forever.',
+      'Swapping a and b needs a temporary variable; a ← b then b ← a makes both the same.'
+    ],
+    example: 'a ← 3         a: 3\nb ← a         a: 3   b: 3\na ← a + 4     a: 7   b: 3\nb ← b * 2     a: 7   b: 6\nDISPLAY(a) DISPLAY(b)  ->  7 6',
+    check: [{q:'a ← 3, b ← a, a ← a + 4, b ← b * 2. What is displayed by DISPLAY(a) DISPLAY(b)?', c:['7 6','7 14','3 6','7 7'], a:0, ex:'b copied 3, then doubled to 6. It never "follows" a to 7.'}],
+    match: q => /swap|not connected|not linked|copy of|copies the value|got a copy/i.test(qAllEx(q)) || ((q.code || '').match(/←|=(?!=)/g) || []).length >= 4
+  },
+  {
+    id: 'local', title: 'var inside a handler or function (local variables)',
+    mistake: 'You think var x = ... inside an onEvent or function changes the global x.',
+    catchIt: [
+      'var inside an onEvent or function creates a NEW local variable that disappears when it finishes.',
+      'If a global already exists, changing it inside a function must NOT use var: just x = x - 1;',
+      'Rule: var once, at the top, outside every onEvent and function.'
+    ],
+    example: 'var lives = 3;\nfunction loseLife() {\n  var lives = 2;     // a different, local lives\n}\nloseLife();\nconsole.log(lives);  // 3',
+    check: [{q:'var lives = 3; function loseLife() { var lives = 2; } loseLife(); console.log(lives); prints:', c:['3','2','undefined','Error'], a:0, ex:'The var inside the function made a separate local lives. The global stays 3.'}],
+    match: q => /\blocal\b|global/i.test(qAllEx(q))
+  },
+  {
+    id: 'func', title: 'Functions: declared is not called',
+    mistake: 'You run a function\'s code just because it is written in the program, or you trace calls in the order the functions were declared.',
+    catchIt: [
+      'A function does nothing until it is called with its name and (). Count the calls, not the declarations.',
+      'Output order follows the CALLS. When you hit a call, jump into the function, trace it with the current variable values, then return to the next line.',
+      'A function that changes a global variable (no var inside) changes it for real; trace each call separately.',
+      'drawStar is not a call; drawStar(); is.'
+    ],
+    example: 'function a() { console.log("A"); }\nfunction b() { console.log("B"); a(); }\nb();\n\nOutput: B A   (a only runs because b called it)',
+    check: [{q:'function a() { console.log("A"); }  function b() { console.log("B"); a(); }  b();\nWhat prints?', c:['B A','A B','A B A','B'], a:0, ex:'Only b() is called directly. It prints B, then calls a(), which prints A.'}],
+    match: q => /function\s+\w+\s*\(|PROCEDURE|\w+\(\);/.test(qAll(q))
+  },
+  {
+    id: 'logic', title: 'AND vs OR (and NOT)',
+    mistake: 'You use OR where the rule needs both, AND where either is enough, or you forget to group with parentheses.',
+    catchIt: [
+      '"Both / and also / must" means AND. "Either / or / at least one" means OR. "Not / unless / without" means NOT.',
+      'AND is true only if every part is true. OR is false only if every part is false.',
+      'When a rule mixes them ("A or B, and not C"), group the OR in parentheses: (A OR B) AND (NOT C).',
+      'Shortcut: one false part makes an AND false. One true part makes an OR true.'
+    ],
+    example: '"Enter if you have a ticket OR a VIP pass, and you are NOT banned"\n  (hasTicket || isVIP) && !isBanned',
+    check: [{q:'"You can enter if you have a ticket or a VIP pass, and you are not banned." Which matches?', c:['(hasTicket || isVIP) && !isBanned','hasTicket && isVIP && !isBanned','(hasTicket || isVIP) || !isBanned','(hasTicket && isVIP) || !isBanned'], a:0, ex:'Either pass is OR, grouped in parentheses, and "not banned" must also be true (AND).'}],
+    match: q => /&&|\|\||\bAND\b|\bOR\b|NOT \(|!\(/.test(qAll(q)) || /logic gate/i.test(qAll(q))
+  },
+  {
+    id: 'mod', title: 'MOD / % mistakes',
+    mistake: 'You divide instead of taking the remainder, or think a small number MOD a bigger number is 0.',
+    catchIt: [
+      'a MOD b is the REMAINDER after dividing a by b. 17 MOD 5 = 2.',
+      'If a is smaller than b, the answer is just a: 3 MOD 8 = 3.',
+      'x MOD 2 = 0 means even. x MOD 10 is the last digit. x MOD n = 0 means x is a multiple of n.',
+      '% has the same priority as * and /.'
+    ],
+    example: '17 MOD 5 = 2     (5 x 3 = 15, 2 left)\n 3 MOD 8 = 3     (8 goes in 0 times)\n20 MOD 5 = 0',
+    check: [{q:'What is (7 MOD 10) + (10 MOD 7)?', c:['10','4','1','3'], a:0, ex:'7 MOD 10 = 7 (7 is smaller than 10). 10 MOD 7 = 3. 7 + 3 = 10.'}],
+    match: q => /MOD|[\w)]\s*%\s*[\w(]/.test(qAll(q))
+  },
+  {
+    id: 'random', title: 'RANDOM runs once per line',
+    mistake: 'You think DISPLAY(x) twice can show two different numbers after one RANDOM.',
+    catchIt: [
+      'x ← RANDOM(1, 6) picks ONE number and stores it. Every later use of x is that same number.',
+      'RANDOM(a, b) includes both a and b.',
+      'For "could NOT be the output": check the range of each variable and whether two DISPLAYs of the same variable must match.'
+    ],
+    example: 'x ← RANDOM(1, 3)\nDISPLAY(x)\nDISPLAY(x)\n\nPossible: 1 1, 2 2, 3 3      Impossible: 1 2',
+    check: [{q:'x ← RANDOM(1, 3), then DISPLAY(x) DISPLAY(x). Which could NOT be displayed?', c:['1 2','2 2','3 3','1 1'], a:0, ex:'x holds one value, so both displays must show the same number.'}],
+    match: q => /RANDOM|randomNumber/.test(qAll(q))
+  },
+  {
+    id: 'event', title: 'onEvent order',
+    mistake: 'You print code inside an onEvent before the code below it, or forget a handler runs once per click.',
+    catchIt: [
+      'All code OUTSIDE handlers runs first, top to bottom, before any click.',
+      'Code inside a handler runs only when that event happens, once per click, in the order the user clicks.',
+      'Where the onEvent block sits in the program does not change when its code runs.'
+    ],
+    example: 'console.log("A");\nonEvent("btn", "click", function() { console.log("B"); });\nconsole.log("C");\n\nUser clicks twice:  A C B B',
+    check: [{q:'console.log("A"); onEvent("btn","click",function(){ console.log("B"); }); console.log("C");  The user clicks btn twice. Output?', c:['A C B B','A B C B','A B B C','A C B'], a:0, ex:'Sequential A and C first, then one B per click.'}],
+    match: q => /onEvent/.test(qAll(q))
+  },
+  {
+    id: 'types', title: 'Mixing up data types',
+    mistake: 'You treat "12" like a number or "false" like the Boolean false.',
+    catchIt: [
+      'Quotes = string, always. "12" and "false" are strings.',
+      'A comparison (5 > 3) gives a Boolean value. Arithmetic gives a number. + with any string gives a string.',
+      'Pick types by meaning: counts and amounts are numbers, names/text are strings, yes/no ("whether") is Boolean.'
+    ],
+    example: 'var a = "12";      // string\nvar b = 12 > 5;    // Boolean (true)\nvar c = 3 + 4;     // number (7)\nvar d = "3" + 4;   // string ("34")',
+    check: [{q:'Which variable holds a NUMBER?\nvar a = "12"; var b = 12 > 5; var c = 3 + 4; var d = "3" + 4;', c:['c','a','b','d'], a:0, ex:'a is a string, b is a Boolean, d is the string "34". Only c is the number 7.'}],
+    match: q => /data type|type of value|string variable|Boolean variable|numeric variable|"false"|"true"/i.test(qAll(q))
+  },
+  {
+    id: 'vocab', title: 'Vocab look-alikes',
+    mistake: 'You confuse two terms that sound close.',
+    catchIt: [
+      'Boolean EXPRESSION (x > 5, must be evaluated) vs Boolean VALUE (true or false, the result).',
+      'FUNCTION (the named group of code) vs FUNCTION CALL (the line that runs it: name();).',
+      '= assignment (stores) vs == comparison (checks). On the AP exam ← stores and = compares.',
+      'RELATIONAL / comparison operators: < > <= >= == != (yes, != is relational, not logical). LOGICAL: && || ! (AND OR NOT).',
+      'CONDITIONAL STATEMENT is the whole if block; SELECTION is the idea of choosing which code runs.',
+      '+ with strings is CONCATENATION; + with numbers is an ARITHMETIC operator.',
+      'EVALUATE produces a value but changes nothing. Only the ASSIGNMENT operator changes a variable.'
+    ],
+    example: 'if (score >= 100) { bonus = 50; }\n   score >= 100        Boolean expression\n   >=                  relational operator\n   the whole if {...}  conditional statement\n   bonus = 50          assignment',
+    check: [{q:'In if (x != 3), the != is which kind of operator?', c:['Relational (comparison) operator','Logical operator','Assignment operator','Arithmetic operator'], a:0, ex:'!= means "not equal to" and compares two values, so it is relational. A logical NOT is a ! on its own, like !(x > 3).'}],
+    match: q => q.cat === 'vocab'
+  }
+];
+
+let mkOpen = {}, mkAns = {}, mkPerm = {};
+function trapStats() {
+  const missed = new Set(loadMissed());
+  return TRAPS.map((t, i) => { const qs = BANK.filter(q => { try { return t.match(q); } catch (e) { return false; } }); return { i, t, qs, miss: qs.filter(q => missed.has(q.id)).length }; });
+}
+function practiceTrap(i) {
+  const st = trapStats()[i];
+  if (!st.qs.length) { alert('No questions for this trap yet.'); return; }
+  const missed = new Set(loadMissed());
+  const pick = shuffle(st.qs).sort((a, b) => (missed.has(b.id) ? 1 : 0) - (missed.has(a.id) ? 1 : 0)).slice(0, 10);
+  testMode = 'trap';
+  launch(shuffle(pick).map(prepQ), Math.max(120, pick.length * 75), 'Trap drill: ' + st.t.title);
+}
+function mkPick(key, ci) { mkAns[key] = { picked: ci, checked: false }; renderMistakes(); }
+function mkCheck(key) { if (mkAns[key]) { mkAns[key].checked = true; renderMistakes(); } }
+function renderMistakes() {
+  const body = document.getElementById('mistakesBody');
+  const stats = trapStats();
+  const missedTotal = loadMissed().length;
+  let h = '';
+  // personal pattern panel
+  h += '<div class="diffbox"><h2 style="margin-top:0">Your mistake patterns</h2>';
+  const hit = stats.filter(s => s.miss > 0).sort((a, b) => b.miss - a.miss);
+  if (!missedTotal) h += '<p class="muted" style="margin:0">No missed questions yet. Take a practice test, and this panel will show which traps you fall into most.</p>';
+  else if (!hit.length) h += '<p class="muted" style="margin:0">Your missed questions do not match a specific trap below. Check the Missed Questions tab.</p>';
+  else {
+    const max = hit[0].miss;
+    h += '<p class="muted" style="margin:0 0 8px">Based on the ' + missedTotal + ' question' + (missedTotal > 1 ? 's' : '') + ' in your Missed list. A question can match more than one trap.</p>';
+    hit.slice(0, 6).forEach(s => {
+      h += '<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>' + esc(s.t.title) + '</b><span class="muted">' + s.miss + ' missed</span></div><div class="seenbar" style="max-width:none"><div style="width:' + Math.round(s.miss / max * 100) + '%;background:#dc2626"></div></div><button class="secondary small" style="margin-top:6px" onclick="mkOpen[' + s.i + ']=true; renderMistakes(); document.getElementById(\'trap' + s.i + '\').scrollIntoView()">Review this trap</button> <button class="primary small" style="margin-top:6px" onclick="practiceTrap(' + s.i + ')">Practice it</button></div>';
+    });
+  }
+  h += '</div>';
+  // checklist
+  h += '<h2>The answer checklist</h2><ol style="line-height:1.7;padding-left:22px">' +
+    '<li><b>Read the last sentence first.</b> What exactly do they want: which variable, displayed or stored, NOT / could NOT, Select two?</li>' +
+    '<li><b>Make a variable table</b> on scratch paper and update it line by line. Do not trace in your head.</li>' +
+    '<li><b>Before every +, look for quotes.</b> Any string means it joins text. Go left to right.</li>' +
+    '<li><b>At every comparison, test the exact cutoff.</b> 5 > 5 is false; 5 >= 5 is true.</li>' +
+    '<li><b>For "which code works," test three values:</b> just below the cutoff, exactly the cutoff, just above. Cross out any choice that fails one.</li>' +
+    '<li><b>Predict the answer before reading the choices.</b> The wrong choices are built from common mistakes, so if yours matches, re-check one step anyway.</li>' +
+    '<li><b>Re-read the question</b> and make sure your choice answers it (right variable, right order, right number of answers).</li></ol>';
+  h += '<h2>Elimination shortcuts</h2><ul style="line-height:1.7;padding-left:22px">' +
+    '<li>A comparison or AND / OR / NOT always gives true or false. Cross out number choices.</li>' +
+    '<li>+ with any string gives a string. If quotes are involved, the answer is text.</li>' +
+    '<li>A variable that is never assigned again keeps its value.</li>' +
+    '<li>An if / else-if / else chain runs exactly one branch. A choice showing two outputs from one chain is wrong.</li>' +
+    '<li>A function that is never called does nothing.</li>' +
+    '<li>Two DISPLAYs of the same variable after one RANDOM show the same number.</li></ul>';
+  // trap cards
+  h += '<h2>The common traps</h2><div class="btnrow"><button class="secondary small" onclick="TRAPS.forEach((_,i)=>mkOpen[i]=true); renderMistakes()">Expand all</button><button class="secondary small" onclick="mkOpen={}; renderMistakes()">Collapse all</button></div>';
+  stats.forEach(s => {
+    const t = s.t, open = !!mkOpen[s.i];
+    h += '<div class="learn-mod" id="trap' + s.i + '"><button class="hdr" onclick="mkOpen[' + s.i + ']=!mkOpen[' + s.i + ']; renderMistakes()"><span><b>' + (s.i + 1) + '. ' + esc(t.title) + '</b><br><span class="muted">' + s.qs.length + ' practice questions' + (s.miss ? ' &middot; <span style="color:#dc2626">' + s.miss + ' you missed</span>' : '') + '</span></span><span>' + (open ? '&#9650;' : '&#9660;') + '</span></button>';
+    if (open) {
+      h += '<div class="learn-body"><h3>The mistake</h3><p>' + esc(t.mistake) + '</p><h3>How to catch it</h3><ul>' + t.catchIt.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul><h3>Example</h3><pre class="code">' + esc(t.example) + '</pre><h3>Quick check</h3>';
+      t.check.forEach((p, pi) => {
+        const key = s.i + '_' + pi;
+        const perm = mkPerm[key] || (mkPerm[key] = shuffle(p.c.map((_, k) => k)));
+        const st = mkAns[key];
+        h += '<div class="pq"><div style="white-space:pre-wrap">' + esc(p.q) + '</div><div class="choices" style="margin-top:8px">';
+        perm.forEach((orig, k) => {
+          let style = '', cls = 'choice';
+          if (st && st.checked) { if (orig === p.a) style = 'style="border-color:#16a34a;background:#dcfce7"'; else if (st.picked === orig) style = 'style="border-color:#dc2626;background:#fee2e2"'; }
+          else if (st && st.picked === orig) cls = 'choice selected';
+          h += '<label class="' + cls + '" ' + style + '><input type="radio" name="mk' + key + '" ' + (st && st.picked === orig ? 'checked' : '') + ' ' + (st && st.checked ? 'disabled' : '') + ' onchange="mkPick(\'' + key + '\',' + orig + ')"><span>' + fmtChoice(p.c[orig]) + '</span></label>';
+        });
+        h += '</div>';
+        if (st && st.checked) h += '<div class="fb ' + (st.picked === p.a ? 'ok' : 'bad') + '"><b>' + (st.picked === p.a ? 'Correct.' : 'That is the trap.') + '</b> ' + esc(p.ex) + '</div><button class="secondary small" style="margin-top:8px" onclick="delete mkAns[\'' + key + '\']; delete mkPerm[\'' + key + '\']; renderMistakes()">Try again</button>';
+        else h += '<button class="primary small" style="margin-top:8px" ' + (st ? '' : 'disabled') + ' onclick="mkCheck(\'' + key + '\')">Check</button>';
+        h += '</div>';
+      });
+      h += '<div class="btnrow"><button class="primary" onclick="practiceTrap(' + s.i + ')">Practice this trap (' + Math.min(10, s.qs.length) + ' questions)</button></div></div>';
+    }
+    h += '</div>';
+  });
+  body.innerHTML = h;
+}
+
 // stable id per question (hash of its text) so adding questions later does not break saved lists
 function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return 'q' + (h >>> 0).toString(36); }
 BANK.forEach(q => {
@@ -489,10 +753,11 @@ function clearMissed() { if (confirm('Clear your missed questions list?')) { sav
 function showTab(name) {
   document.querySelectorAll('.tabpane').forEach(el => el.classList.add('hidden'));
   document.getElementById(name).classList.remove('hidden');
-  document.querySelectorAll('#nav button').forEach((b, i) => b.classList.toggle('active', ['start','learn','vocab','missed'][i] === name));
+  document.querySelectorAll('#nav button').forEach((b, i) => b.classList.toggle('active', ['start','learn','mistakes','vocab','missed'][i] === name));
   if (name === 'vocab') renderVocab();
   if (name === 'missed') renderMissed();
   if (name === 'learn') renderLearn();
+  if (name === 'mistakes') renderMistakes();
 }
 
 // ===== TEST BUILDING =====
@@ -792,6 +1057,7 @@ updateMissedPill();
 updateDiff();
 updateSeenUI();
 if (location.hash === '#learn') showTab('learn');
+else if (location.hash === '#mistakes') showTab('mistakes');
 else if (location.hash === '#vocab') showTab('vocab');
 else if (location.hash === '#missed') showTab('missed');
 </script>
